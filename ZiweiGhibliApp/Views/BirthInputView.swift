@@ -14,7 +14,6 @@ public struct BirthInputView: View {
     @State private var isCustomCity: Bool = false
     @State private var customLongitude: Double = 121.5
     @State private var isShowingSettings: Bool = false
-    @State private var isShowingGoogleSheetsSettings: Bool = false
     
     // 中文日期格式化器
     private var chineseDateFormatter: DateFormatter {
@@ -197,18 +196,6 @@ public struct BirthInputView: View {
                                     .font(GhibliTheme.titleFont(size: 16))
                                     .foregroundColor(GhibliTheme.forestMoss)
                                 Spacer()
-                                Button(action: { isShowingGoogleSheetsSettings = true }) {
-                                    HStack(spacing: 3) {
-                                        Image(systemName: "tablecells.badge.ellipsis")
-                                        Text("雲端表格")
-                                            .font(GhibliTheme.noteFont(size: 11))
-                                    }
-                                    .foregroundColor(GhibliTheme.magicBrass)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 3)
-                                    .background(GhibliTheme.magicBrass.opacity(0.12))
-                                    .cornerRadius(6)
-                                }
                                 Button(action: { isShowingSettings = true }) {
                                     Image(systemName: "slider.horizontal.3")
                                         .foregroundColor(GhibliTheme.magicBrass)
@@ -269,39 +256,7 @@ public struct BirthInputView: View {
                         .parchmentStyle(isHighlighted: true)
                         .padding(.horizontal)
                         
-                        // 雲端試算表同步狀態列
-                        Button(action: { isShowingGoogleSheetsSettings = true }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? "exclamationmark.icloud.fill" : "checkmark.icloud.fill")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? GhibliTheme.calciferOrange : Color(red: 0.18, green: 0.52, blue: 0.25))
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? "📊 Google 試算表雲端同步：尚未設定" : "📊 Google 試算表雲端同步：已連線")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(GhibliTheme.forestMoss)
-                                    Text(GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? "點此設定 Web App 網址，每次排盤自動備份姓名與生辰" : "排盤時自動在背景將生辰資料記錄至您的專屬試算表")
-                                        .font(GhibliTheme.noteFont(size: 11))
-                                        .foregroundColor(Color.gray)
-                                }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(GhibliTheme.magicBrass)
-                            }
-                            .padding(10)
-                            .background(Color.white.opacity(0.85))
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? GhibliTheme.calciferOrange.opacity(0.6) : Color(red: 0.18, green: 0.52, blue: 0.25).opacity(0.6), lineWidth: 1)
-                            )
-                        }
-                        .padding(.horizontal)
-                        
-                        // 6. 排盤按鈕
+                        // 5. 排盤按鈕
                         Button(action: generateChart) {
                             HStack(spacing: 8) {
                                 Image(systemName: "sparkles")
@@ -329,11 +284,11 @@ public struct BirthInputView: View {
                 }
             }
         }
+        .onAppear {
+            GoogleSheetsSyncManager.shared.flushOfflineQueue()
+        }
         .sheet(isPresented: $isShowingSettings) {
             SchoolSettingsView(config: $schoolConfig)
-        }
-        .sheet(isPresented: $isShowingGoogleSheetsSettings) {
-            GoogleSheetsSettingsSheet()
         }
     }
     

@@ -68,11 +68,19 @@ fun SynastryScreen(chartA: AstrolabeChart) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = ParchmentCard),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, BorderBrass.copy(alpha = 0.5f))
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
-                Text("💑 雙人合盤對象設定", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = ForestMoss)
-                Spacer(modifier = Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CuteDeerMascot(size = 36.dp)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text("💑 雙人合盤對象設定", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = ForestMoss)
+                        Text("輸入對象生辰，即時解鎖兩性契合度與宮位同頻解析", fontSize = 11.sp, color = ForestMoss.copy(alpha = 0.8f))
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // 對象姓名輸入 (黑色字體！)
                 OutlinedTextField(
@@ -109,9 +117,9 @@ fun SynastryScreen(chartA: AstrolabeChart) {
                                 containerColor = if (isSelected) ForestMoss else Color.White
                             ),
                             shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, BorderBrass.copy(alpha = 0.5f))
+                            border = BorderStroke(1.dp, if (isSelected) ForestMoss else BorderBrass.copy(alpha = 0.5f))
                         ) {
-                            Text(g.label, color = if (isSelected) Color.White else ForestMoss, fontSize = 13.sp)
+                            Text(g.label, color = if (isSelected) Color.White else ForestMoss, fontSize = 13.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
                         }
                     }
                 }
@@ -139,8 +147,30 @@ fun SynastryScreen(chartA: AstrolabeChart) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("對象生日", fontSize = 13.sp, color = ForestMoss)
+                    Text("對象生日 (國曆)", fontSize = 13.sp, color = ForestMoss)
                     Text("${partnerYear}年${partnerMonth + 1}月${partnerDay}日", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CalciferOrange)
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // 不知道出生時辰勾選框
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { isPartnerUnknownHour = !isPartnerUnknownHour }
+                        .padding(vertical = 4.dp)
+                ) {
+                    Checkbox(
+                        checked = isPartnerUnknownHour,
+                        onCheckedChange = { isPartnerUnknownHour = it },
+                        colors = CheckboxDefaults.colors(checkedColor = CalciferOrange)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Column {
+                        Text("不知道確切出生時間", fontSize = 12.5.sp, color = ForestMoss)
+                        Text("將自動以子時（23:00-01:00）為基準起盤", fontSize = 10.5.sp, color = MagicBrass)
+                    }
                 }
             }
         }

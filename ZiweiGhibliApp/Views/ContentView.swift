@@ -203,6 +203,9 @@ public struct ContentView: View {
                 BirthInputView(chart: $chart, schoolConfig: $schoolConfig)
             }
         }
+        .onAppear {
+            GoogleSheetsSyncManager.shared.flushOfflineQueue()
+        }
     }
 }
 

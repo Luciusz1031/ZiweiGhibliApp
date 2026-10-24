@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -16,11 +17,15 @@ import java.util.*
 object GoogleSheetsSyncManager {
     private const val PREF_NAME = "xiaoluer_google_sheets_pref"
     private const val KEY_WEBHOOK_URL = "webhook_url"
-    private const val KEY_ENABLED = "sync_enabled"
+    private const val KEY_OFFLINE_QUEUE = "offline_queue"
+
+    // 正式部署的 Google Apps Script Web App 網址
+    const val DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzUZm93oNx74FAUj-5ZkUI8pNLXh4AnY_h_UV6VlgzWmWw4gC4chrYGQajC8aePgtM5/exec"
 
     fun getWebhookUrl(context: Context): String {
         val sp = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        return sp.getString(KEY_WEBHOOK_URL, "") ?: ""
+        val saved = sp.getString(KEY_WEBHOOK_URL, "") ?: ""
+        return if (saved.isBlank()) DEFAULT_WEBHOOK_URL else saved
     }
 
     fun setWebhookUrl(context: Context, url: String) {
@@ -28,18 +33,8 @@ object GoogleSheetsSyncManager {
         sp.edit().putString(KEY_WEBHOOK_URL, url.trim()).apply()
     }
 
-    fun isEnabled(context: Context): Boolean {
-        val sp = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        return sp.getBoolean(KEY_ENABLED, true)
-    }
-
-    fun setEnabled(context: Context, enabled: Boolean) {
-        val sp = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        sp.edit().putBoolean(KEY_ENABLED, enabled).apply()
-    }
-
     /**
-     * 非同步將排盤紀錄上傳至 Google Sheet
+     * 非同步將排盤紀錄上傳至 Google Sheet（離線時自動暫存於本機）
      */
     fun syncChart(
         context: Context,
@@ -49,22 +44,17 @@ object GoogleSheetsSyncManager {
         onComplete: ((Boolean, String?) -> Unit)? = null
     ) {
         val urlStr = getWebhookUrl(context)
-        if (!isEnabled(context) || urlStr.isBlank()) {
-            onComplete?.invoke(false, "未設定 Google Sheet 網址或已關閉同步")
-            return
-        }
 
         CoroutineScope(Dispatchers.IO).launch {
-            try {
+            val json = try {
                 val nowDf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.TAIWAN).apply {
                     timeZone = TimeZone.getTimeZone("Asia/Taipei")
                 }
                 val birthDf = SimpleDateFormat("yyyy年MM月dd日", Locale.TAIWAN)
                 val timeDf = SimpleDateFormat("HH:mm", Locale.TAIWAN)
-
                 val birthTimeStr = if (isUnknownHour) "未知 (以子時起盤)" else timeDf.format(solarBirthDate)
 
-                val json = JSONObject().apply {
+                JSONObject().apply {
                     put("timestamp", nowDf.format(Date()))
                     put("userName", chart.userName)
                     put("gender", chart.gender.label)
@@ -78,77 +68,77 @@ object GoogleSheetsSyncManager {
                     put("bodyMaster", chart.bodyMasterStar)
                     put("platform", "Android (小鹿兒算命)")
                 }
-
-                val result = sendPostRequest(urlStr, json.toString())
-                withContext(Dispatchers.Main) {
-                    onComplete?.invoke(result.first, result.second)
-                }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onComplete?.invoke(false, e.localizedMessage)
-                }
+                null
+            }
+
+            if (json == null) {
+                withContext(Dispatchers.Main) { onComplete?.invoke(false, "資料封裝失敗") }
+                return@launch
+            }
+
+            val result = sendPostRequest(urlStr, json.toString())
+            if (!result.first) {
+                // 網路失敗或離線：存入本機離線隊列
+                enqueueOffline(context, json)
+            } else {
+                // 發送成功：順便嘗試清空先前的離線隊列
+                flushOfflineQueue(context)
+            }
+
+            withContext(Dispatchers.Main) {
+                onComplete?.invoke(result.first, result.second)
             }
         }
     }
 
-    /**
-     * 測試 Google Apps Script Web App 連線
-     */
-    fun testConnection(
-        urlStr: String,
-        onComplete: (Boolean, String) -> Unit
-    ) {
-        val trimmed = urlStr.trim()
-        if (trimmed.isBlank()) {
-            onComplete(false, "網址不得為空")
-            return
-        }
-        if (trimmed.contains("docs.google.com/spreadsheets")) {
-            onComplete(false, "⚠️ 您輸入的是 Google 試算表頁面網址，請依照教學貼上 Apps Script 部署後的「網頁應用程式網址 (Web App URL)」(結尾應為 /exec)！")
-            return
-        }
-        if (trimmed.endsWith("/edit") || trimmed.contains("script.google.com/home/projects")) {
-            onComplete(false, "⚠️ 您輸入的是 Apps Script 編輯器網址，請點選右上角「部署」>「新增部署作業」複製網頁應用程式網址！")
-            return
-        }
-        if (trimmed.endsWith("/dev")) {
-            onComplete(false, "⚠️ 您輸入的是測試開發網址 (/dev)，此網址要求登入 Google 帳號。請在部署時建立正式網頁應用程式，取得 /exec 結尾的網址！")
-            return
-        }
-        if (!trimmed.startsWith("https://")) {
-            onComplete(false, "網址格式不正確，必須以 https:// 開頭")
-            return
-        }
+    // MARK: - 離線隊列與自動重試
 
+    private fun getOfflineQueue(context: Context): MutableList<String> {
+        val sp = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val raw = sp.getString(KEY_OFFLINE_QUEUE, "[]") ?: "[]"
+        val list = mutableListOf<String>()
+        try {
+            val arr = JSONArray(raw)
+            for (i in 0 until arr.length()) {
+                list.add(arr.getString(i))
+            }
+        } catch (_: Exception) {}
+        return list
+    }
+
+    private fun saveOfflineQueue(context: Context, list: List<String>) {
+        val sp = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val arr = JSONArray()
+        list.forEach { arr.put(it) }
+        sp.edit().putString(KEY_OFFLINE_QUEUE, arr.toString()).apply()
+    }
+
+    private fun enqueueOffline(context: Context, json: JSONObject) {
+        val list = getOfflineQueue(context)
+        list.add(json.toString())
+        saveOfflineQueue(context, list)
+    }
+
+    /**
+     * 當 App 啟動或有網路時，自動將所有未送出的離線資料補傳至 Google Sheet
+     */
+    fun flushOfflineQueue(context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val testJson = JSONObject().apply {
-                    put("timestamp", "測試連線")
-                    put("userName", "小鹿連線測試")
-                    put("gender", "-")
-                    put("solarBirthDate", "-")
-                    put("birthTime", "-")
-                    put("isUnknownHour", "-")
-                    put("lunarBirthDate", "測試成功")
-                    put("baZi", "-")
-                    put("elementBureau", "-")
-                    put("lifeMaster", "-")
-                    put("bodyMaster", "-")
-                    put("platform", "Android 測試訊號")
-                }
-                val (success, msg) = sendPostRequest(trimmed, testJson.toString())
-                withContext(Dispatchers.Main) {
-                    if (success) {
-                        onComplete(true, "✅ 連線成功！已傳送一筆測試資料至 Google Sheet，請查看試算表是否出現「小鹿連線測試」一列。")
-                    } else {
-                        onComplete(false, msg ?: "連線失敗，請檢查網址或權限設定。")
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onComplete(false, e.localizedMessage ?: "連線發生錯誤")
+            val list = getOfflineQueue(context)
+            if (list.isEmpty()) return@launch
+
+            val urlStr = getWebhookUrl(context)
+            val remaining = mutableListOf<String>()
+
+            for (item in list) {
+                val res = sendPostRequest(urlStr, item)
+                if (!res.first) {
+                    remaining.add(item)
                 }
             }
+
+            saveOfflineQueue(context, remaining)
         }
     }
 
@@ -176,15 +166,10 @@ object GoogleSheetsSyncManager {
             val stream = if (responseCode in 200..399) connection.inputStream else connection.errorStream
             val responseBody = stream?.bufferedReader()?.use { it.readText() } ?: ""
 
-            if (responseBody.contains("accounts.google.com") || responseBody.contains("ServiceLogin")) {
-                Pair(false, "❌ 權限設定錯誤：Apps Script 部署時「誰可以存取 (Who has access)」未設為「所有人 (Anyone)」，請至 Apps Script 重新部署！")
-            } else if (responseBody.contains("\"status\":\"error\"")) {
-                val errJson = try { JSONObject(responseBody).optString("message") } catch (e: Exception) { responseBody }
-                Pair(false, "❌ 試算表寫入失敗: $errJson")
-            } else if (responseCode in 200..399) {
+            if (responseCode in 200..399 && !responseBody.contains("\"status\":\"error\"")) {
                 Pair(true, null)
             } else {
-                Pair(false, "❌ 伺服器回應碼: $responseCode")
+                Pair(false, "回應錯誤: $responseCode")
             }
         } catch (e: Exception) {
             Pair(false, e.message)

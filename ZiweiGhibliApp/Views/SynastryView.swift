@@ -295,57 +295,202 @@ public struct SynastryView: View {
         }
     }
     
-    // 對象生辰修改彈窗 (完整支援姓名、中文日期與不知道出生時刻)
+    // 對象生辰修改彈窗 (100% 宮崎駿手繪羊皮紙美學風格)
     private var partnerInputSheet: some View {
         NavigationView {
-            Form {
-                Section(header: Text("對象基本資料")) {
-                    TextField("對象姓名 / 稱謂", text: $partnerName)
-                        .foregroundColor(.black)
-                    Picker("性別", selection: $partnerGender) {
-                        ForEach(Gender.allCases, id: \.self) { g in
-                            Text(g.rawValue).tag(g)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                }
+            ZStack {
+                GhibliTheme.parchmentBg.ignoresSafeArea()
                 
-                Section(header: Text("對象出生時間（中文格式）")) {
-                    DatePicker("出生日期", selection: $partnerDate, displayedComponents: [.date])
-                        .environment(\.locale, Locale(identifier: "zh_Hant_TW"))
-                    
-                    Toggle("不知道出生時間，以子時（23:00-01:00）起盤", isOn: $partnerUnknownHour)
-                        .tint(GhibliTheme.calciferOrange)
-                    
-                    if !partnerUnknownHour {
-                        DatePicker("出生時刻", selection: $partnerDate, displayedComponents: [.hourAndMinute])
-                            .environment(\.locale, Locale(identifier: "zh_Hant_TW"))
-                    } else {
-                        Text("🌟 以子時（23:00-01:00）為基準排盤")
-                            .font(.system(size: 12))
-                            .foregroundColor(GhibliTheme.magicBrass)
-                    }
-                    
-                    Picker("出生城市", selection: $partnerCity) {
-                        ForEach(CityDatabase.presetCities) { city in
-                            Text("\(city.region) - \(city.name)").tag(city)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        // 1. 頂部小鹿導覽卡
+                        HStack(alignment: .top, spacing: 10) {
+                            CuteDeerMascotView(size: 42)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("設定合盤對象")
+                                    .font(GhibliTheme.titleFont(size: 17))
+                                    .foregroundColor(GhibliTheme.forestMoss)
+                                Text("輸入伴侶、好友或合作夥伴的生辰資料，小鹿兒將為您開啟雙人星盤同頻共振與緣分深度解析！")
+                                    .font(GhibliTheme.noteFont(size: 12))
+                                    .foregroundColor(GhibliTheme.forestMoss.opacity(0.85))
+                                    .lineSpacing(2)
+                            }
                         }
+                        .padding(12)
+                        .background(GhibliTheme.parchmentCard)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(GhibliTheme.borderBrass.opacity(0.4), lineWidth: 1)
+                        )
+                        
+                        // 2. 對象基本資料卡片
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("👤 對象基本資料")
+                                .font(GhibliTheme.titleFont(size: 15))
+                                .foregroundColor(GhibliTheme.forestMoss)
+                            
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("姓名 / 稱謂")
+                                    .font(GhibliTheme.bodyFont(size: 12))
+                                    .foregroundColor(GhibliTheme.forestMoss.opacity(0.8))
+                                
+                                TextField("例如：伴侶、好友或真實姓名", text: $partnerName)
+                                    .font(.system(size: 14.5))
+                                    .foregroundColor(.black)
+                                    .padding(10)
+                                    .background(Color.white)
+                                    .cornerRadius(8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(GhibliTheme.borderBrass.opacity(0.6), lineWidth: 1)
+                                    )
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("性別")
+                                    .font(GhibliTheme.bodyFont(size: 12))
+                                    .foregroundColor(GhibliTheme.forestMoss.opacity(0.8))
+                                
+                                HStack(spacing: 10) {
+                                    ForEach(Gender.allCases, id: \.self) { g in
+                                        Button(action: {
+                                            HapticManager.triggerImpact(style: .light)
+                                            partnerGender = g
+                                        }) {
+                                            Text(g.rawValue)
+                                                .font(GhibliTheme.bodyFont(size: 13))
+                                                .fontWeight(partnerGender == g ? .bold : .regular)
+                                                .foregroundColor(partnerGender == g ? .white : GhibliTheme.forestMoss)
+                                                .frame(maxWidth: .infinity)
+                                                .padding(.vertical, 8)
+                                                .background(partnerGender == g ? GhibliTheme.forestMoss : Color.white)
+                                                .cornerRadius(8)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 8)
+                                                        .stroke(GhibliTheme.borderBrass.opacity(0.5), lineWidth: 1)
+                                                )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .padding(14)
+                        .parchmentStyle()
+                        
+                        // 3. 對象出生生辰卡片
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("🎂 對象出生生辰（國曆）")
+                                .font(GhibliTheme.titleFont(size: 15))
+                                .foregroundColor(GhibliTheme.forestMoss)
+                            
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("國曆出生日期")
+                                    .font(GhibliTheme.bodyFont(size: 12))
+                                    .foregroundColor(GhibliTheme.forestMoss.opacity(0.8))
+                                
+                                DatePicker("", selection: $partnerDate, displayedComponents: [.date])
+                                    .datePickerStyle(.compact)
+                                    .labelsHidden()
+                                    .environment(\.locale, Locale(identifier: "zh_Hant_TW"))
+                                    .padding(.vertical, 2)
+                            }
+                            
+                            Toggle(isOn: $partnerUnknownHour) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("不知道確切出生時間")
+                                        .font(GhibliTheme.bodyFont(size: 13))
+                                        .foregroundColor(GhibliTheme.forestMoss)
+                                    Text("將自動以子時（23:00-01:00）為基準起盤")
+                                        .font(GhibliTheme.noteFont(size: 11))
+                                        .foregroundColor(GhibliTheme.magicBrass)
+                                }
+                            }
+                            .tint(GhibliTheme.calciferOrange)
+                            .padding(.vertical, 4)
+                            
+                            if !partnerUnknownHour {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("出生時刻")
+                                        .font(GhibliTheme.bodyFont(size: 12))
+                                        .foregroundColor(GhibliTheme.forestMoss.opacity(0.8))
+                                    
+                                    DatePicker("", selection: $partnerDate, displayedComponents: [.hourAndMinute])
+                                        .datePickerStyle(.compact)
+                                        .labelsHidden()
+                                        .environment(\.locale, Locale(identifier: "zh_Hant_TW"))
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("出生城市（真太陽時校驗）")
+                                    .font(GhibliTheme.bodyFont(size: 12))
+                                    .foregroundColor(GhibliTheme.forestMoss.opacity(0.8))
+                                
+                                Picker("出生城市", selection: $partnerCity) {
+                                    ForEach(CityDatabase.presetCities) { city in
+                                        Text("\(city.region) - \(city.name)").tag(city)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .accentColor(GhibliTheme.forestMoss)
+                            }
+                        }
+                        .padding(14)
+                        .parchmentStyle()
+                        
+                        // 4. 底部完成按鈕
+                        Button(action: {
+                            HapticManager.triggerSuccess()
+                            isEditingPartner = false
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                calculationVersion += 1
+                            }
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "sparkles")
+                                Text("完成設定・開始合盤分析")
+                                    .font(GhibliTheme.titleFont(size: 16))
+                                    .fontWeight(.bold)
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                LinearGradient(
+                                    colors: [GhibliTheme.magicBrass, GhibliTheme.calciferOrange],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(12)
+                            .shadow(color: GhibliTheme.calciferOrange.opacity(0.35), radius: 6, x: 0, y: 3)
+                        }
+                        .padding(.top, 6)
+                        .padding(.bottom, 20)
                     }
+                    .padding(16)
                 }
             }
             .navigationTitle("設定合盤對象")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("取消") {
+                        isEditingPartner = false
+                    }
+                    .foregroundColor(GhibliTheme.forestMoss)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成並分析") {
+                    Button("完成") {
                         HapticManager.triggerSuccess()
                         isEditingPartner = false
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                             calculationVersion += 1
                         }
                     }
-                    .foregroundColor(GhibliTheme.calciferOrange)
-                    .fontWeight(.bold)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(GhibliTheme.forestMoss)
                 }
             }
         }

@@ -41,6 +41,10 @@ fun MainScreen() {
     var chart by remember { mutableStateOf<AstrolabeChart?>(null) }
     var selectedTab by remember { mutableStateOf(MainTab.METIS) }
 
+    LaunchedEffect(Unit) {
+        GoogleSheetsSyncManager.flushOfflineQueue(context)
+    }
+
     if (chart == null) {
         BirthInputScreen(
             onGenerateChart = { date: Date, gender: Gender, name: String, isUnknown: Boolean ->
