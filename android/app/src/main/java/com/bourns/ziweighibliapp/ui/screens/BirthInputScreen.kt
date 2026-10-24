@@ -20,6 +20,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bourns.ziweighibliapp.engine.GoogleSheetsSyncManager
 import com.bourns.ziweighibliapp.models.Gender
 import com.bourns.ziweighibliapp.ui.components.CuteDeerMascot
 import com.bourns.ziweighibliapp.ui.theme.*
@@ -36,6 +37,12 @@ fun BirthInputScreen(
     var userName by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf(Gender.MALE) }
     var isUnknownHour by remember { mutableStateOf(false) }
+
+    var showGoogleSheetsDialog by remember { mutableStateOf(false) }
+    var webhookUrlInput by remember { mutableStateOf(GoogleSheetsSyncManager.getWebhookUrl(context)) }
+    var isSyncEnabled by remember { mutableStateOf(GoogleSheetsSyncManager.isEnabled(context)) }
+    var testStatusMessage by remember { mutableStateOf<String?>(null) }
+    var isTesting by remember { mutableStateOf(false) }
 
     // 預設日期：1982年10月31日 12:00
     val calendar = remember {
@@ -261,6 +268,119 @@ fun BirthInputScreen(
             )
         }
 
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // 5. Google Sheet 雲端同步按鈕
+        TextButton(
+            onClick = {
+                webhookUrlInput = GoogleSheetsSyncManager.getWebhookUrl(context)
+                isSyncEnabled = GoogleSheetsSyncManager.isEnabled(context)
+                testStatusMessage = null
+                showGoogleSheetsDialog = true
+            }
+        ) {
+            Text(
+                text = "📊 Google Sheet 雲端同步設定",
+                fontSize = 12.5.sp,
+                color = MagicBrass,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    if (showGoogleSheetsDialog) {
+        AlertDialog(
+            onDismissRequest = { showGoogleSheetsDialog = false },
+            title = {
+                Text("Google Sheet 雲端同步", fontWeight = FontWeight.Bold, color = ForestMoss)
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "將使用者每次排盤輸入的姓名、生日、生辰時辰與日期等資訊，自動記錄至您的專屬 Google 試算表中！",
+                        fontSize = 12.sp,
+                        color = ForestMoss.copy(alpha = 0.85f),
+                        lineHeight = 17.sp
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { isSyncEnabled = !isSyncEnabled }
+                    ) {
+                        Checkbox(
+                            checked = isSyncEnabled,
+                            onCheckedChange = { isSyncEnabled = it },
+                            colors = CheckboxDefaults.colors(checkedColor = ForestMoss)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("啟用自動同步", fontSize = 13.sp, color = ForestMoss)
+                    }
+
+                    OutlinedTextField(
+                        value = webhookUrlInput,
+                        onValueChange = { webhookUrlInput = it },
+                        label = { Text("Web App URL (Apps Script 網址)", fontSize = 11.sp) },
+                        placeholder = { Text("https://script.google.com/macros/s/.../exec", fontSize = 10.sp) },
+                        textStyle = TextStyle(color = Color.Black, fontSize = 12.sp),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                            focusedBorderColor = ForestMoss,
+                            unfocusedBorderColor = BorderBrass.copy(alpha = 0.6f)
+                        )
+                    )
+
+                    Button(
+                        onClick = {
+                            isTesting = true
+                            testStatusMessage = null
+                            GoogleSheetsSyncManager.testConnection(webhookUrlInput) { success, msg ->
+                                isTesting = false
+                                testStatusMessage = msg
+                            }
+                        },
+                        enabled = !isTesting && webhookUrlInput.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MagicBrass),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (isTesting) "測試連線中..." else "發送測試訊號", color = Color.White, fontSize = 12.sp)
+                    }
+
+                    testStatusMessage?.let { msg ->
+                        Text(
+                            text = msg,
+                            fontSize = 11.sp,
+                            color = ForestMoss,
+                            modifier = Modifier
+                                .background(ParchmentCard, RoundedCornerShape(4.dp))
+                                .padding(6.dp)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        GoogleSheetsSyncManager.setWebhookUrl(context, webhookUrlInput)
+                        GoogleSheetsSyncManager.setEnabled(context, isSyncEnabled)
+                        showGoogleSheetsDialog = false
+                    }
+                ) {
+                    Text("儲存", fontWeight = FontWeight.Bold, color = ForestMoss)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showGoogleSheetsDialog = false }) {
+                    Text("取消", color = Color.Gray)
+                }
+            },
+            containerColor = ParchmentBg
+        )
     }
 }

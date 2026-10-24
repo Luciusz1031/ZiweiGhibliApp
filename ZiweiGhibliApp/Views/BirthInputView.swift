@@ -14,6 +14,7 @@ public struct BirthInputView: View {
     @State private var isCustomCity: Bool = false
     @State private var customLongitude: Double = 121.5
     @State private var isShowingSettings: Bool = false
+    @State private var isShowingGoogleSheetsSettings: Bool = false
     
     // 中文日期格式化器
     private var chineseDateFormatter: DateFormatter {
@@ -196,6 +197,18 @@ public struct BirthInputView: View {
                                     .font(GhibliTheme.titleFont(size: 16))
                                     .foregroundColor(GhibliTheme.forestMoss)
                                 Spacer()
+                                Button(action: { isShowingGoogleSheetsSettings = true }) {
+                                    HStack(spacing: 3) {
+                                        Image(systemName: "tablecells.badge.ellipsis")
+                                        Text("雲端表格")
+                                            .font(GhibliTheme.noteFont(size: 11))
+                                    }
+                                    .foregroundColor(GhibliTheme.magicBrass)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(GhibliTheme.magicBrass.opacity(0.12))
+                                    .cornerRadius(6)
+                                }
                                 Button(action: { isShowingSettings = true }) {
                                     Image(systemName: "slider.horizontal.3")
                                         .foregroundColor(GhibliTheme.magicBrass)
@@ -287,6 +300,9 @@ public struct BirthInputView: View {
         .sheet(isPresented: $isShowingSettings) {
             SchoolSettingsView(config: $schoolConfig)
         }
+        .sheet(isPresented: $isShowingGoogleSheetsSettings) {
+            GoogleSheetsSettingsSheet()
+        }
     }
     
     private func generateChart() {
@@ -308,6 +324,14 @@ public struct BirthInputView: View {
             isUnknownHour: isUnknownHour,
             config: schoolConfig
         )
+        
+        // 自動在背景將輸入資料同步至 Google Sheet
+        GoogleSheetsSyncManager.shared.syncChart(
+            chart: c,
+            solarBirthDate: finalBirthDate,
+            isUnknownHour: isUnknownHour
+        )
+        
         withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) {
             chart = c
         }

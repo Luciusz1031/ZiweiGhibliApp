@@ -12,9 +12,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bourns.ziweighibliapp.engine.GoogleSheetsSyncManager
 import com.bourns.ziweighibliapp.engine.ZiweiEngine
 import com.bourns.ziweighibliapp.models.AstrolabeChart
 import com.bourns.ziweighibliapp.models.Gender
@@ -33,18 +35,22 @@ enum class MainTab(val title: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
+    val context = LocalContext.current
     var chart by remember { mutableStateOf<AstrolabeChart?>(null) }
     var selectedTab by remember { mutableStateOf(MainTab.METIS) }
 
     if (chart == null) {
         BirthInputScreen(
             onGenerateChart = { date: Date, gender: Gender, name: String, isUnknown: Boolean ->
-                chart = ZiweiEngine.generateChart(
+                val newChart = ZiweiEngine.generateChart(
                     birthDate = date,
                     gender = gender,
                     userName = name,
                     isUnknownHour = isUnknown
                 )
+                chart = newChart
+                // 自動在背景將輸入資料同步至 Google Sheet
+                GoogleSheetsSyncManager.syncChart(context, newChart, date, isUnknown)
             }
         )
     } else {
