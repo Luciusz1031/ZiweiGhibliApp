@@ -102,6 +102,8 @@ public struct TianjiPattern: Identifiable, Codable, Hashable {
 // MARK: - 完整紫微斗數命盤
 public struct AstrolabeChart: Identifiable, Codable {
     public var id: UUID = UUID()
+    public var userName: String = "命主"
+    public var isUnknownHour: Bool = false
     public let solarDate: Date
     public let city: CityLocation
     public let gender: Gender
@@ -117,6 +119,42 @@ public struct AstrolabeChart: Identifiable, Codable {
     public var palaces: [PalaceData]           // 12 宮位數據 (依地支順序 0..11)
     public var patterns: [TianjiPattern]       // 檢測出的倪師天紀格局
     public let config: SchoolConfig            // 當前採用的流派設定
+    
+    public init(
+        id: UUID = UUID(),
+        userName: String = "命主",
+        isUnknownHour: Bool = false,
+        solarDate: Date,
+        city: CityLocation,
+        gender: Gender,
+        lunarInfo: LunarDateInfo,
+        solarCorrection: SolarCorrectionResult,
+        elementBureau: ElementBureau,
+        lifePalaceBranch: EarthlyBranch,
+        bodyPalaceBranch: EarthlyBranch,
+        lifeMasterStar: String,
+        bodyMasterStar: String,
+        palaces: [PalaceData],
+        patterns: [TianjiPattern],
+        config: SchoolConfig
+    ) {
+        self.id = id
+        self.userName = userName
+        self.isUnknownHour = isUnknownHour
+        self.solarDate = solarDate
+        self.city = city
+        self.gender = gender
+        self.lunarInfo = lunarInfo
+        self.solarCorrection = solarCorrection
+        self.elementBureau = elementBureau
+        self.lifePalaceBranch = lifePalaceBranch
+        self.bodyPalaceBranch = bodyPalaceBranch
+        self.lifeMasterStar = lifeMasterStar
+        self.bodyMasterStar = bodyMasterStar
+        self.palaces = palaces
+        self.patterns = patterns
+        self.config = config
+    }
     
     // 依地支取得宮位便捷方法
     public func palace(at branch: EarthlyBranch) -> PalaceData {

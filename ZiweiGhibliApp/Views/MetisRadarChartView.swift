@@ -2,11 +2,11 @@ import SwiftUI
 
 public struct MetisRadarChartView: View {
     public let scores: DimensionalScores
-    public var size: CGFloat = 220
+    public var size: CGFloat = 190
     
     @State private var animatedScale: CGFloat = 0.1
     
-    public init(scores: DimensionalScores, size: CGFloat = 220) {
+    public init(scores: DimensionalScores, size: CGFloat = 190) {
         self.scores = scores
         self.size = size
     }
@@ -25,17 +25,19 @@ public struct MetisRadarChartView: View {
     }
     
     public var body: some View {
+        let radius = size / 2.0
+        let labelMargin: CGFloat = 40.0
+        let totalSize: CGFloat = (radius + labelMargin) * 2.0
+        let center = CGPoint(x: totalSize / 2.0, y: totalSize / 2.0)
+        
         ZStack {
-            let radius = size / 2.0
-            let center = CGPoint(x: radius, y: radius)
-            
-            // 1. 同心正六邊形網格底層 (4 層)
+            // 1. 同心正六邊形網格底層 (4 層：25%, 50%, 75%, 100%)
             ForEach([0.25, 0.5, 0.75, 1.0], id: \.self) { level in
                 HexagonPath(center: center, radius: radius * level)
                     .stroke(Color.gray.opacity(0.25), lineWidth: level == 1.0 ? 1.0 : 0.6)
             }
             
-            // 2. 六條主軸線 (從中心向六個頂點發散)
+            // 2. 六條主軸線 (從幾何中心向六個頂點發散)
             ForEach(0..<6, id: \.self) { i in
                 let angle = angleForIndex(i)
                 let pt = pointOnCircle(center: center, radius: radius, angle: angle)
@@ -70,11 +72,11 @@ public struct MetisRadarChartView: View {
                     .position(pt)
             }
             
-            // 5. 外圍六角文字標籤
+            // 5. 外圍六角文字標籤 (完美對齊中心)
             ForEach(0..<6, id: \.self) { i in
                 let d = dimensions[i]
                 let angle = angleForIndex(i)
-                let labelDistance = radius + 22
+                let labelDistance = radius + 23.0
                 let pt = pointOnCircle(center: center, radius: labelDistance, angle: angle)
                 
                 VStack(spacing: 1) {
@@ -88,7 +90,7 @@ public struct MetisRadarChartView: View {
                 .position(pt)
             }
         }
-        .frame(width: size + 65, height: size + 65)
+        .frame(width: totalSize, height: totalSize)
         .onAppear {
             withAnimation(.spring(response: 0.8, dampingFraction: 0.75)) {
                 animatedScale = 1.0
@@ -97,7 +99,7 @@ public struct MetisRadarChartView: View {
     }
     
     private func angleForIndex(_ index: Int) -> Double {
-        // 頂部從 -90度 (12點鐘) 開始，每格 60 度
+        // 頂部從 -90度 (12點鐘) 開始，每格 60 度順時針
         return (-90.0 + Double(index) * 60.0) * .pi / 180.0
     }
     

@@ -7,6 +7,8 @@ public class ZiweiEngine {
         birthDate: Date,
         city: CityLocation,
         gender: Gender,
+        userName: String = "命主",
+        isUnknownHour: Bool = false,
         config: SchoolConfig = .default
     ) -> AstrolabeChart {
         
@@ -203,6 +205,8 @@ public class ZiweiEngine {
         let patterns = TianjiPatternMatcher.matchPatterns(palaces: palaces, lifeBranch: lifePalaceBranch)
         
         return AstrolabeChart(
+            userName: userName,
+            isUnknownHour: isUnknownHour,
             solarDate: birthDate,
             city: city,
             gender: gender,

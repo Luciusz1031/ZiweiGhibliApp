@@ -129,11 +129,10 @@ public struct MetisChartGridView: View {
                 .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
             
             VStack(spacing: 4) {
-                // METIS 品牌標誌
-                Text("M E T I S")
-                    .font(.system(size: 11, weight: .bold, design: .serif))
-                    .foregroundColor(GhibliTheme.forestMoss.opacity(0.6))
-                    .tracking(3)
+                // 姓名與 METIS 標誌
+                Text(chart.userName)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(GhibliTheme.forestMoss)
                 
                 // 性別與局數
                 HStack(spacing: 4) {
@@ -143,6 +142,11 @@ public struct MetisChartGridView: View {
                     Text(chart.elementBureau.name)
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(GhibliTheme.calciferOrange)
+                    if chart.isUnknownHour {
+                        Text("[午時]")
+                            .font(.system(size: 9))
+                            .foregroundColor(GhibliTheme.spiritPurple)
+                    }
                 }
                 
                 // 生辰與八字

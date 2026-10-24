@@ -101,11 +101,12 @@ public class PDFReportGenerator {
         let boldAttrs: [NSAttributedString.Key: Any] = [.font: boldFont, .foregroundColor: UIColor(red: 0.204, green: 0.322, blue: 0.247, alpha: 1.0)]
         let orangeAttrs: [NSAttributedString.Key: Any] = [.font: boldFont, .foregroundColor: UIColor(red: 0.851, green: 0.380, blue: 0.220, alpha: 1.0)]
         
-        "造別：\(chart.gender.rawValue)".draw(at: CGPoint(x: col1X, y: infoY), withAttributes: boldAttrs)
+        "命主姓名：\(chart.userName)（\(chart.gender.rawValue)）".draw(at: CGPoint(x: col1X, y: infoY), withAttributes: boldAttrs)
         "局數：\(chart.elementBureau.name)".draw(at: CGPoint(x: col2X, y: infoY), withAttributes: orangeAttrs)
         infoY += 15
         
-        "公曆生辰：\(df.string(from: chart.solarDate))".draw(at: CGPoint(x: col1X, y: infoY), withAttributes: textAttrs)
+        let birthStr = chart.isUnknownHour ? "\(df.string(from: chart.solarDate)) (時辰未定・午時基準)" : "\(df.string(from: chart.solarDate))"
+        "公曆生辰：\(birthStr)".draw(at: CGPoint(x: col1X, y: infoY), withAttributes: textAttrs)
         "出生地點：\(chart.city.name) (經度 \(String(format: "%.1f°", chart.city.longitude)))".draw(at: CGPoint(x: col2X, y: infoY), withAttributes: textAttrs)
         infoY += 15
         

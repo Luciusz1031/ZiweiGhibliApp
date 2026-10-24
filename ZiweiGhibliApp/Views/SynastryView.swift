@@ -3,19 +3,36 @@ import SwiftUI
 public struct SynastryView: View {
     public let personA: AstrolabeChart
     
-    // 對象 B 的資料狀態 (預設提供一個預設生辰，使用者可隨時點擊修改)
-    @State private var partnerDate: Date = Calendar.current.date(from: DateComponents(year: 1996, month: 11, day: 20, hour: 14, minute: 30)) ?? Date()
+    // 對象 B 的資料狀態 (預設日期為 1982年10月31日)
+    @State private var partnerDate: Date = Calendar.current.date(from: DateComponents(year: 1982, month: 10, day: 31, hour: 12, minute: 0)) ?? Date()
     @State private var partnerGender: Gender = .female
     @State private var partnerCity: CityLocation = CityDatabase.defaultCity
-    @State private var partnerName: String = "對象 / 伴侶"
+    @State private var partnerName: String = "對象"
+    @State private var partnerUnknownHour: Bool = false
+    
     @State private var isEditingPartner: Bool = false
+    @State private var calculationVersion: Int = 0 // 每次重算觸發動畫
+    
+    // 中文日期格式化
+    private var chineseDateFormatter: DateFormatter {
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "zh_Hant_TW")
+        df.dateFormat = "yyyy年MM月dd日"
+        return df
+    }
     
     public var body: some View {
-        // 即時排盤 Person B
+        // 依據當前輸入即時排盤 Person B (若不知道時辰則以午時基準排盤)
+        let bDate = partnerUnknownHour ?
+            (Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: partnerDate) ?? partnerDate) :
+            partnerDate
+        
         let personB = ZiweiEngine.generateChart(
-            birthDate: partnerDate,
+            birthDate: bDate,
             city: partnerCity,
             gender: partnerGender,
+            userName: partnerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "對象" : partnerName,
+            isUnknownHour: partnerUnknownHour,
             config: personA.config
         )
         
@@ -27,9 +44,10 @@ public struct SynastryView: View {
                 HStack(spacing: 10) {
                     // 盤主 A
                     VStack(spacing: 4) {
-                        Text("我 (盤主)")
-                            .font(GhibliTheme.noteFont(size: 11))
+                        Text(personA.userName.isEmpty ? "我 (盤主)" : personA.userName)
+                            .font(GhibliTheme.titleFont(size: 13))
                             .foregroundColor(GhibliTheme.magicBrass)
+                            .lineLimit(1)
                         Text(personA.gender.rawValue)
                             .font(.system(size: 10))
                             .foregroundColor(GhibliTheme.forestMoss.opacity(0.7))
@@ -58,10 +76,11 @@ public struct SynastryView: View {
                         isEditingPartner = true
                     }) {
                         VStack(spacing: 4) {
-                            HStack(spacing: 2) {
-                                Text(partnerName)
-                                    .font(GhibliTheme.noteFont(size: 11))
+                            HStack(spacing: 3) {
+                                Text(partnerName.isEmpty ? "對象" : partnerName)
+                                    .font(GhibliTheme.titleFont(size: 13))
                                     .foregroundColor(GhibliTheme.magicBrass)
+                                    .lineLimit(1)
                                 Image(systemName: "pencil")
                                     .font(.system(size: 8))
                                     .foregroundColor(GhibliTheme.magicBrass)
@@ -77,6 +96,48 @@ public struct SynastryView: View {
                         .frame(maxWidth: .infinity)
                         .padding(10)
                         .parchmentStyle()
+                    }
+                }
+                .padding(.horizontal, 14)
+                
+                // 快速編輯與重新合盤按鈕欄
+                HStack(spacing: 10) {
+                    Button(action: {
+                        HapticManager.triggerImpact(style: .light)
+                        isEditingPartner = true
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "slider.horizontal.3")
+                            Text("修改對象資料 (\(chineseDateFormatter.string(from: partnerDate)))")
+                                .font(GhibliTheme.bodyFont(size: 12))
+                        }
+                        .foregroundColor(GhibliTheme.forestMoss)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(GhibliTheme.parchmentCard)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(GhibliTheme.borderBrass.opacity(0.6), lineWidth: 1)
+                        )
+                    }
+                    
+                    Button(action: {
+                        HapticManager.triggerSuccess()
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                            calculationVersion += 1
+                        }
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.clockwise")
+                            Text("重新分析")
+                                .font(GhibliTheme.bodyFont(size: 12))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(GhibliTheme.calciferOrange)
+                        .cornerRadius(8)
                     }
                 }
                 .padding(.horizontal, 14)
@@ -117,6 +178,7 @@ public struct SynastryView: View {
                 .padding(14)
                 .parchmentStyle(isHighlighted: true)
                 .padding(.horizontal, 14)
+                .id("synastry-dashboard-\(calculationVersion)")
                 
                 // 3. 主星磁場碰撞
                 VStack(alignment: .leading, spacing: 8) {
@@ -233,19 +295,36 @@ public struct SynastryView: View {
         }
     }
     
-    // 對象生辰修改彈窗
+    // 對象生辰修改彈窗 (完整支援姓名、中文日期與不知道出生時刻)
     private var partnerInputSheet: some View {
         NavigationView {
             Form {
                 Section(header: Text("對象基本資料")) {
-                    TextField("對象稱謂/暱稱", text: $partnerName)
+                    TextField("對象姓名 / 稱謂", text: $partnerName)
                     Picker("性別", selection: $partnerGender) {
                         ForEach(Gender.allCases, id: \.self) { g in
                             Text(g.rawValue).tag(g)
                         }
                     }
+                    .pickerStyle(.segmented)
+                }
+                
+                Section(header: Text("對象出生時間（中文格式）")) {
                     DatePicker("出生日期", selection: $partnerDate, displayedComponents: [.date])
-                    DatePicker("出生時刻", selection: $partnerDate, displayedComponents: [.hourAndMinute])
+                        .environment(\.locale, Locale(identifier: "zh_Hant_TW"))
+                    
+                    Toggle("不知道出生時刻", isOn: $partnerUnknownHour)
+                        .tint(GhibliTheme.calciferOrange)
+                    
+                    if !partnerUnknownHour {
+                        DatePicker("出生時刻", selection: $partnerDate, displayedComponents: [.hourAndMinute])
+                            .environment(\.locale, Locale(identifier: "zh_Hant_TW"))
+                    } else {
+                        Text("🌟 以正午（午時 12:00）為基準排盤")
+                            .font(.system(size: 12))
+                            .foregroundColor(GhibliTheme.magicBrass)
+                    }
+                    
                     Picker("出生城市", selection: $partnerCity) {
                         ForEach(CityDatabase.presetCities) { city in
                             Text("\(city.region) - \(city.name)").tag(city)
@@ -257,9 +336,12 @@ public struct SynastryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
+                    Button("完成並分析") {
                         HapticManager.triggerSuccess()
                         isEditingPartner = false
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                            calculationVersion += 1
+                        }
                     }
                     .foregroundColor(GhibliTheme.calciferOrange)
                     .fontWeight(.bold)

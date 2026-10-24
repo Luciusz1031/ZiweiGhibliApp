@@ -50,6 +50,10 @@ public struct MetisAnalysisView: View {
                 // 2. 命宮主星標籤與大標題 (Metis 標題設計)
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
+                        Text(chart.userName)
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(GhibliTheme.forestMoss)
+                        
                         Text("命宮主星：\(lifePalace.majorStars.map { $0.name }.joined(separator: "・"))")
                             .font(.system(size: 12, weight: .semibold, design: .serif))
                             .foregroundColor(GhibliTheme.spiritPurple)
@@ -58,6 +62,16 @@ public struct MetisAnalysisView: View {
                             Text("[\(b.rawValue)地]")
                                 .font(.system(size: 10, design: .serif))
                                 .foregroundColor(GhibliTheme.magicBrass)
+                        }
+                        
+                        if chart.isUnknownHour {
+                            Text("[時辰基準：午時]")
+                                .font(.system(size: 9.5, weight: .medium))
+                                .foregroundColor(GhibliTheme.calciferOrange)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 1)
+                                .background(GhibliTheme.calciferOrange.opacity(0.12))
+                                .cornerRadius(4)
                         }
                     }
                     
@@ -73,10 +87,14 @@ public struct MetisAnalysisView: View {
                 }
                 .padding(.horizontal, 14)
                 
-                // 3. 六維雷達圖卡片 (Metis 標誌性雷達圖)
+                // 3. 六維雷達圖卡片 (Metis 標誌性雷達圖，完美置中對齊)
                 VStack(spacing: 8) {
-                    MetisRadarChartView(scores: report.scores, size: 190)
-                        .padding(.vertical, 8)
+                    HStack {
+                        Spacer()
+                        MetisRadarChartView(scores: report.scores, size: 190)
+                        Spacer()
+                    }
+                    .padding(.vertical, 4)
                     
                     Text("六維分數由主星廟旺、吉煞會照與生年四化動態權衡評定")
                         .font(GhibliTheme.noteFont(size: 10))

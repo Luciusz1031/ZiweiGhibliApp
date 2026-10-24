@@ -200,6 +200,8 @@ public struct ContentView: View {
                             birthDate: activeChart.solarDate,
                             city: activeChart.city,
                             gender: activeChart.gender,
+                            userName: activeChart.userName,
+                            isUnknownHour: activeChart.isUnknownHour,
                             config: schoolConfig
                         )
                     })
