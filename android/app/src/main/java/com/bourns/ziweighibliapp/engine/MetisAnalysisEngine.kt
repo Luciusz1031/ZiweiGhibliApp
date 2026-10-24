@@ -141,6 +141,38 @@ object MetisAnalysisEngine {
 
         val details = mutableMapOf<String, MetisDimensionDetail>()
 
+        // 1. 財富
+        val wealthStars = wealthPalace.majorStars.map { it.name }
+        val wealthAdv = mutableListOf<String>()
+        val wealthBlind = mutableListOf<String>()
+        val wealthAct = mutableListOf<String>()
+
+        if (wealthStars.contains("武曲") || wealthStars.contains("天府") || wealthStars.contains("太陰")) {
+            wealthAdv.add("正財正庫星坐鎮，善於靠無可替代的專業技術與穩健資產配置累積厚實財富。")
+            wealthAdv.add("抗風險與守財能力卓越，在大環境動盪時懂得提前守住充足的流動性資金。")
+            wealthBlind.add("有時過於謹慎保守，面對新興獲利模式易瞻前顧後錯失紅利期。")
+            wealthAct.add("將每月結餘固定分配至指數型抗通膨資產或不動產，享受穩健複利。")
+        } else if (wealthStars.contains("貪狼") || wealthStars.contains("廉貞") || wealthStars.contains("七殺") || wealthStars.contains("破軍")) {
+            wealthAdv.add("商業直覺敏銳，具備跨界整合資源與開拓多元進帳管道的強大吸金體質。")
+            wealthAdv.add("敢在風口來臨時搶佔先機，具備極佳的市場開拓與商業變現爆發力。")
+            wealthBlind.add("切忌追求高槓桿短期暴利，防範因投機短炒而造成資產大幅波動。")
+            wealthAct.add("嚴格執行停利與止損紀律，將冒險獲利即時轉入穩健資產鎖定勝局。")
+        } else if (wealthStars.contains("天機") || wealthStars.contains("巨門")) {
+            wealthAdv.add("靠腦力、智慧方案與溝通說服力生財，知識即財富，點子變現速度極快。")
+            wealthBlind.add("思慮過多易猶豫不決，且需防人際溝通中的財務細節誤解。")
+            wealthAct.add("深耕個人核心專業IP，將個人智慧成果標準化、產品化以擴大獲利規模。")
+        } else {
+            wealthAdv.add("以誠信與好人緣求財，善於借力使力，正財根基伴隨年歲穩步提升。")
+            wealthBlind.add("面子開銷大或抹不開情面代墊款項，易產生隱形財務損耗。")
+            wealthAct.add("親兄弟明算帳，重要商業合作務必白紙黑字，釐清權責。")
+        }
+        if (wealthPalace.stars.any { it.natalTransformation == TransformationType.LU }) {
+            wealthAdv.add("財帛宮逢生年化祿，財源滾滾而來，求財路上總有貴人與良機相隨。")
+        }
+        if (wealthPalace.stars.any { it.natalTransformation == TransformationType.JI }) {
+            wealthBlind.add("財帛宮逢化忌，資金周轉易有暗流，嚴禁幫人代墊或作保借貸。")
+        }
+
         details["財富"] = MetisDimensionDetail(
             dimensionName = "財富",
             iconName = "AttachMoney",
@@ -151,21 +183,33 @@ object MetisAnalysisEngine {
             majorStarsDisplay = formatStars(wealthPalace),
             transformations = formatTransformations(wealthPalace),
             coreEssence = "以 ${formatStars(wealthPalace)} 為求財根基。你的賺錢邏輯不靠道聽途說的盲目投機，而是靠個人無可替代的專業技術、獨特商業嗅覺與穩步累積，方能水到渠成。",
-            advantages = listOf(
-                "具備極佳的價值嗅覺，擅長將專業知識或技能轉化為穩定現金流。",
-                "抗風險能力佳，在大環境動盪時懂得提前守住流動性資金。",
-                "正財根基紮實，中年後複利累積效應越發顯著。"
-            ),
-            blindSpots = listOf(
-                "人情開銷或因抹不開面子而幫他人代墊墊款，易產生隱形損失。",
-                "切忌高槓桿投機短炒，穩紮穩打才是守成良方。"
-            ),
-            actionStrategies = listOf(
-                "將每月結餘固定分配至不動產或指數型穩健資產中，遠離高風險誘惑。",
-                "深耕本業關鍵壁壘，持續提升個人單位時間價值。"
-            ),
+            advantages = wealthAdv,
+            blindSpots = wealthBlind,
+            actionStrategies = wealthAct,
             luckyFawnTips = "小鹿兒招財錦囊：在皮夾常備一張嶄新開運金鈔，日常多穿搭深綠、駝色系衣飾，財氣最聚！"
         )
+
+        // 2. 事業
+        val careerStars = careerPalace.majorStars.map { it.name }
+        val careerAdv = mutableListOf<String>()
+        val careerBlind = mutableListOf<String>()
+        val careerAct = mutableListOf<String>()
+
+        if (careerStars.contains("紫微") || careerStars.contains("天府") || careerStars.contains("太陽")) {
+            careerAdv.add("職場自帶領袖威儀與大將之風，善於統籌全局並激發團隊潛能。")
+            careerAdv.add("對效率與成果高度負責，容易贏得決策高層與重要客戶的全力信任。")
+            careerBlind.add("求好心切時容易事必躬親，導致自身精疲力竭，需學會授權。")
+            careerAct.add("將精力聚焦於最高價值的戰略方向與人脈樞紐，建立個人品牌聲量。")
+        } else if (careerStars.contains("武曲") || careerStars.contains("七殺") || careerStars.contains("破軍")) {
+            careerAdv.add("執行力雷厲風行、遇難題沉著果決，是能打硬仗的開疆拓土先鋒。")
+            careerAdv.add("勇於破除組織陳規與低效流程，能帶領業務團隊取得突破性業績。")
+            careerBlind.add("性格剛烈直率，易因言語急切而得罪同儕或合作夥伴。")
+            careerAct.add("溝通時多留三分餘地，注重團隊協作以柔克剛，更能無往不利。")
+        } else {
+            careerAdv.add("處事細膩周全、應變適應力強，擅長跨部門協調與方案策劃。")
+            careerBlind.add("面對重大轉折時容易思慮過度，需培養敢於拍板承擔的勇氣。")
+            careerAct.add("定期梳理職場里程碑與作品集，用無可挑剔的專業建立無可替代的壁壘。")
+        }
 
         details["事業"] = MetisDimensionDetail(
             dimensionName = "事業",
@@ -177,21 +221,32 @@ object MetisAnalysisEngine {
             majorStarsDisplay = formatStars(careerPalace),
             transformations = formatTransformations(careerPalace),
             coreEssence = "官祿宮坐鎮 ${formatStars(careerPalace)}，職場自帶擔當與執行力。適合在需要獨立決策、戰略規劃或核心技術的舞台發揮長才，越早獨當一面越容易成器。",
-            advantages = listOf(
-                "遇突發難題沉著果斷，能在混亂中理出清晰執行線路。",
-                "對效率與成果高度負責，極容易獲得高層與合作夥伴信賴。",
-                "勇於革新與優化流程，是推動組織向前變革的靈魂人物。"
-            ),
-            blindSpots = listOf(
-                "過於求好心切時容易事必躬親，導致自身精疲力竭。",
-                "對下屬或隊友期望過高，需多留給他人犯錯成長的空間。"
-            ),
-            actionStrategies = listOf(
-                "學會授權分工，將精力聚焦於最高價值的戰略方向與人脈樞紐。",
-                "定期梳理個人職場作品集與里程碑，建立個人品牌聲量。"
-            ),
+            advantages = careerAdv,
+            blindSpots = careerBlind,
+            actionStrategies = careerAct,
             luckyFawnTips = "小鹿兒事業錦囊：辦公桌左手邊擺放一盆生機盎然的常青綠植，能為你帶來貴人助力與清晰思路！"
         )
+
+        // 3. 感情
+        val marriageStars = marriagePalace.majorStars.map { it.name }
+        val marriageAdv = mutableListOf<String>()
+        val marriageBlind = mutableListOf<String>()
+        val marriageAct = mutableListOf<String>()
+
+        if (marriageStars.contains("天同") || marriageStars.contains("太陰") || marriageStars.contains("天府")) {
+            marriageAdv.add("在親密關係中溫柔細膩、富有同理心，能給伴侶滿滿的家庭溫暖與情緒價值。")
+            marriageAdv.add("懂得營造生活情趣，願意為維護關係和諧而體諒付出。")
+            marriageBlind.add("偶爾多愁善感或將委屈悶在心底，需建立主動坦率的溝通機制。")
+            marriageAct.add("有話當面溫和表達，多用正面肯定句代替批評建議，讚美能化解一切冰霜。")
+        } else if (marriageStars.contains("紫微") || marriageStars.contains("太陽") || marriageStars.contains("武曲")) {
+            marriageAdv.add("對感情專一真誠、富有責任擔當，願意為共同未來構築堅實物質與精神後盾。")
+            marriageBlind.add("性格較為強勢理性，說話習慣講道理而忽略了伴侶的情感共鳴需求。")
+            marriageAct.add("每週安排專屬雙人時光，放下手機傾聽伴侶心聲，柔軟擁抱勝過千言萬語。")
+        } else {
+            marriageAdv.add("重視精神共鳴與彼此獨立自由的空間，相處像最好的知己與戰友。")
+            marriageBlind.add("情緒易受外在環境牽動，偶有忽冷忽熱讓對方產生不安全感。")
+            marriageAct.add("定期表達感恩與愛意，共同培養一項戶外或休閒興趣深化黏著度。")
+        }
 
         details["感情"] = MetisDimensionDetail(
             dimensionName = "感情",

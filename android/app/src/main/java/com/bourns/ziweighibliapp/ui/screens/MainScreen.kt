@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bourns.ziweighibliapp.engine.AstrolabeTextReportGenerator
 import com.bourns.ziweighibliapp.engine.GoogleSheetsSyncManager
 import com.bourns.ziweighibliapp.engine.ZiweiEngine
 import com.bourns.ziweighibliapp.models.AstrolabeChart
@@ -66,6 +68,13 @@ fun MainScreen() {
                         )
                     },
                     actions = {
+                        IconButton(onClick = {
+                            chart?.let { c ->
+                                AstrolabeTextReportGenerator.shareReport(context, c)
+                            }
+                        }) {
+                            Icon(Icons.Default.Share, contentDescription = "分享命盤報告", tint = ForestMoss)
+                        }
                         IconButton(onClick = { chart = null }) {
                             Icon(Icons.Default.Refresh, contentDescription = "重新起盤", tint = ForestMoss)
                         }

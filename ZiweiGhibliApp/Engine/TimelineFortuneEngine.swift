@@ -41,100 +41,43 @@ public class TimelineFortuneEngine {
         case .natal:
             let lifeBranch = chart.lifePalaceBranch
             let p = chart.palace(at: lifeBranch)
-            let starsStr = p.majorStars.map { "\($0.name)\($0.brightness != nil ? "[\($0.brightness!.rawValue)]" : "")" }.joined(separator: "、")
-            let displayStars = starsStr.isEmpty ? "命無正曜 (借對宮吉星照耀)" : starsStr
-            
-            return TimelineFortuneReading(
+            return synthesizeReading(
                 scope: .natal,
-                currentFocusText: "本命元辰（終身核心能量軸）",
-                targetPalace: p,
-                palaceName: "本命宮 (\(p.earthlyBranch.name)宮)",
-                starsDisplay: displayStars,
-                headline: "立足本心，終身格局之定海神針",
-                plainOverview: """
-                本命盤是你一生的性格基石、天賦超能力與格局上限。你的本命由 \(displayStars) 鎮守，代表你天生具備獨立審視與開拓進取的勇氣。在人生長河中，無論外在運勢如何起伏，你的核心原則與處世格局都是你最厚實的底牌。只要發揮本質優勢，定能開創出屬於自己的天地！
-                """,
-                opportunities: [
-                    "天生自帶敏銳判斷力與獨立思維，不隨波逐流。",
-                    "能將專業知識轉化為實質成就，中年後福澤深厚。",
-                    "貴人運長久相隨，關鍵時刻總有長輩與朋友相助。"
-                ],
-                precautions: [
-                    "求好心切時容易給自己過大壓力，需保持身心平衡。",
-                    "面對不同意見多點傾聽與包容，溝通更能事半功倍。"
-                ],
-                fawnAdvice: "小鹿兒溫馨提醒：認同自己的獨特節奏，不急不躁、順心而行，你比想像中更有力量！",
-                highlightedBranch: lifeBranch
+                palace: p,
+                chart: chart,
+                focusText: "本命元辰（終身核心人格與潛能基石）",
+                timeLabel: "終身元辰"
             )
             
         case .decade:
-            let safeIdx = min(max(decadeIndex, 0), 11)
+            let safeIdx = min(max(decadeIndex, 0), chart.palaces.count - 1)
             let p = chart.palaces[safeIdx]
-            let starsStr = p.majorStars.map { "\($0.name)\($0.brightness != nil ? "[\($0.brightness!.rawValue)]" : "")" }.joined(separator: "、")
-            let displayStars = starsStr.isEmpty ? "借對宮星曜吉光照臨" : starsStr
-            
-            return TimelineFortuneReading(
+            return synthesizeReading(
                 scope: .decade,
-                currentFocusText: "\(p.decadeStartAge) - \(p.decadeEndAge) 歲 大限十年運勢走向",
-                targetPalace: p,
-                palaceName: "大限宮位：\(p.type.name) (\(p.earthlyBranch.name)宮)",
-                starsDisplay: displayStars,
-                headline: "步入【\(p.type.name)】十年主場，關鍵成長與厚積薄發期",
-                plainOverview: """
-                在 \(p.decadeStartAge) 至 \(p.decadeEndAge) 歲這黃金十年中，你的運勢焦點全神貫注於【\(p.type.name)】所管轄的人生領域。宮內由 \(displayStars) 主導，氣場生機蓬勃。這十年是深耕專業、建立不可替代地位的重要轉折點，適合鎖定長期目標紮實前行。
-                """,
-                opportunities: [
-                    "此大限內事業與人脈資源聚集，能迎來發光發熱的重要舞台。",
-                    "個人決策力大幅提升，能獨立承擔重任並贏得信任。",
-                    "財庫基石逐漸穩固，適合進行長線穩健的資產規劃。"
-                ],
-                precautions: [
-                    "避免頻繁更換賽道，專注於核心優勢方能結出豐碩果實。",
-                    "合約文書與重要合作需字斟句酌，切忌口頭承諾。"
-                ],
-                fawnAdvice: "小鹿兒大限錦囊：十年磨一劍！只要認準正確方向並持之以恆，時間會給出最美好的回報！",
-                highlightedBranch: p.earthlyBranch
+                palace: p,
+                chart: chart,
+                focusText: "\(p.decadeStartAge) - \(p.decadeEndAge) 歲 大限十年運勢主場",
+                timeLabel: "\(p.decadeStartAge)-\(p.decadeEndAge)歲大限"
             )
             
         case .annual:
-            // 計算流年地支 (如 2026 -> 丙午年, 地支為午=6)
-            let yearBranchIdx = (selectedYear - 4) % 12
-            let normalizedBranchIdx = (yearBranchIdx + 12) % 12
-            let annualBranch = EarthlyBranch(rawValue: normalizedBranchIdx)!
+            let yearBranchIdx = ((selectedYear - 4) % 12 + 12) % 12
+            let annualBranch = EarthlyBranch(rawValue: yearBranchIdx) ?? .wu
             
-            let yearStemIdx = (selectedYear - 4) % 10
-            let normalizedStemIdx = (yearStemIdx + 10) % 10
-            let annualStem = HeavenlyStem(rawValue: normalizedStemIdx)!
+            let yearStemIdx = ((selectedYear - 4) % 10 + 10) % 10
+            let annualStem = HeavenlyStem(rawValue: yearStemIdx) ?? .bing
             
             let p = chart.palace(at: annualBranch)
-            let starsStr = p.majorStars.map { "\($0.name)\($0.brightness != nil ? "[\($0.brightness!.rawValue)]" : "")" }.joined(separator: "、")
-            let displayStars = starsStr.isEmpty ? "星曜和順 (對宮星曜借照)" : starsStr
-            
-            return TimelineFortuneReading(
+            return synthesizeReading(
                 scope: .annual,
-                currentFocusText: "\(selectedYear) 歲次【\(annualStem.name)\(annualBranch.name)年】流年氣場",
-                targetPalace: p,
-                palaceName: "流年命宮臨【\(annualBranch.name)宮】(本命\(p.type.name))",
-                starsDisplay: displayStars,
-                headline: "\(selectedYear) 流年迎來創新變局，乘風破浪展宏圖",
-                plainOverview: """
-                西曆 \(selectedYear) 年（歲次\(annualStem.name)\(annualBranch.name)），你的流年命宮行至 \(annualBranch.name) 宮，受 \(displayStars) 的牽引。今年外在機會頻繁浮現，動態交流與跨界合作明顯增多，是走出舒適圈、開拓新格局的關鍵一年！
-                """,
-                opportunities: [
-                    "職場上有望接手新專案或被賦予更多主導權限，才華得以展現。",
-                    "出外遠行或跨領域交流能結識志同道合的新朋友與貴人。",
-                    "進財管道呈現多元化趨勢，利於發展個人第二專長。"
-                ],
-                precautions: [
-                    "行事切忌急功近利，重大投資決策前宜多方驗證數據。",
-                    "注意調節作息與放鬆神經，避免熬夜勞累影響元氣。"
-                ],
-                fawnAdvice: "小鹿兒流年叮嚀：今年出門在外貴人特別多，多微笑、多主動打招呼，好運自然常伴左右！",
-                highlightedBranch: annualBranch
+                palace: p,
+                chart: chart,
+                focusText: "\(selectedYear) 歲次【\(annualStem.name)\(annualBranch.name)年】流年氣場",
+                timeLabel: "\(selectedYear)年（\(annualStem.name)\(annualBranch.name)）",
+                annualYear: selectedYear
             )
             
         case .minor:
-            // 小限：依生年地支起算
             let birthBranch = chart.lunarInfo.yearBranch
             let startBranchMap: [EarthlyBranch: EarthlyBranch] = [
                 .yin: .chen, .wu: .chen, .xu: .chen,
@@ -143,100 +86,348 @@ public class TimelineFortuneEngine {
                 .hai: .chou, .mao: .chou, .wei: .chou
             ]
             let startBranch = startBranchMap[birthBranch] ?? .chen
-            // 年齡小限推算
             let currentYear = Calendar.current.component(.year, from: Date())
             let birthYear = Calendar.current.component(.year, from: chart.solarDate)
             let nominalAge = max(currentYear - birthYear + 1, 1)
             let minorIdx = (startBranch.rawValue + (nominalAge - 1)) % 12
-            let minorBranch = EarthlyBranch(rawValue: minorIdx)!
+            let minorBranch = EarthlyBranch(rawValue: minorIdx) ?? .chen
             let p = chart.palace(at: minorBranch)
             
-            return TimelineFortuneReading(
+            return synthesizeReading(
                 scope: .minor,
-                currentFocusText: "實歲 \(nominalAge) 歲 小限心境微氣候",
-                targetPalace: p,
-                palaceName: "小限宮位：\(minorBranch.name)宮 (本命\(p.type.name))",
-                starsDisplay: p.majorStars.map { $0.name }.joined(separator: "、").ifEmpty("借宮和順"),
-                headline: "當前年歲聚焦內心調適與步調梳理",
-                plainOverview: """
-                小限反映你當前歲數的主觀心境感受、健康元氣與日常情緒。小限入【\(minorBranch.name)宮】，提示你這一年在追求目標的同時，更要關注內心的安寧與真實需求，找到生活與奮鬥的甜蜜平衡點。
-                """,
-                opportunities: [
-                    "靈感豐富，適合閱讀、進修或培養一門療癒身心的興趣。",
-                    "家庭親友關係溫馨和睦，能為你提供堅實的情感避風港。"
-                ],
-                precautions: [
-                    "偶有胡思亂想或精神疲勞，及時運動放空能迅速排解。",
-                    "瑣碎雜事勿往心裡去，放寬心胸自得其樂。"
-                ],
-                fawnAdvice: "小鹿兒小限錦囊：每天給自己喝一杯溫熱花草茶的時光，溫暖自己，生活便處處美好！",
-                highlightedBranch: minorBranch
+                palace: p,
+                chart: chart,
+                focusText: "實歲 \(nominalAge) 歲 小限心境微氣候",
+                timeLabel: "\(nominalAge)歲小限"
             )
             
         case .monthly:
             let safeMonth = min(max(selectedMonth, 1), 12)
-            // 流月推算 (以流年地支起正月)
             let currentYear = Calendar.current.component(.year, from: Date())
-            let yearBranchIdx = (currentYear - 4) % 12
+            let yearBranchIdx = ((currentYear - 4) % 12 + 12) % 12
+            // 順行起流月 (流年支起正月)
             let monthBranchIdx = (yearBranchIdx + (safeMonth - 1)) % 12
-            let monthBranch = EarthlyBranch(rawValue: (monthBranchIdx + 12) % 12)!
+            let monthBranch = EarthlyBranch(rawValue: monthBranchIdx) ?? .zi
             let p = chart.palace(at: monthBranch)
-            let monthNames = ["", "正", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"]
+            let monthNames = ["", "正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "冬月", "臘月"]
             let mName = monthNames[safeMonth]
             
-            return TimelineFortuneReading(
+            return synthesizeReading(
                 scope: .monthly,
-                currentFocusText: "農曆 \(mName) 月 流月吉凶氣候",
-                targetPalace: p,
-                palaceName: "流月宮位：\(monthBranch.name)宮 (本命\(p.type.name))",
-                starsDisplay: p.majorStars.map { $0.name }.joined(separator: "、").ifEmpty("吉星拱照"),
-                headline: "農曆 \(mName) 月：節奏明快，步步落實",
-                plainOverview: """
-                農曆 \(mName) 月運勢行至 \(monthBranch.name) 宮。本月你的生活與工作節奏相對俐落，適合將積壓已久的待辦清單一件件踏實清理，執行效率非常高！
-                """,
-                opportunities: [
-                    "本月談判溝通順利，能促成共識與關鍵合作方案落地。",
-                    "生活中有小確幸偏財進帳或收到親友贈送的暖心禮物。"
-                ],
-                precautions: [
-                    "忙碌中別忘了按時吃飯，保持充足水分與規律休息。"
-                ],
-                fawnAdvice: "小鹿兒流月叮嚀：這個月是耕耘收穫期，保持開朗心情，幸運女神就在身邊！",
-                highlightedBranch: monthBranch
+                palace: p,
+                chart: chart,
+                focusText: "農曆 \(mName) 流月吉凶氣候",
+                timeLabel: "農曆\(mName)"
             )
             
         case .daily:
             let safeDay = min(max(selectedDay, 1), 30)
             let dayBranchIdx = (safeDay - 1) % 12
-            let dayBranch = EarthlyBranch(rawValue: dayBranchIdx)!
+            let dayBranch = EarthlyBranch(rawValue: dayBranchIdx) ?? .zi
             let p = chart.palace(at: dayBranch)
             
-            return TimelineFortuneReading(
+            return synthesizeReading(
                 scope: .daily,
-                currentFocusText: "當日流日吉凶氣象（農曆 \(safeDay) 日）",
-                targetPalace: p,
-                palaceName: "流日值日：\(dayBranch.name)宮 (本命\(p.type.name))",
-                starsDisplay: p.majorStars.map { $0.name }.joined(separator: "、").ifEmpty("祥和順暢"),
-                headline: "今日氣象和潤，宜決斷關鍵要務",
-                plainOverview: """
-                今日流日氣場專注於【\(p.type.name)】，直覺靈感與執行力處於極佳狀態。適合安排重要會議、簽署合約或與關鍵夥伴交流，容易取得令人欣喜的進展！
-                """,
-                opportunities: [
-                    "思維敏銳，能迅速找到複雜難題的突破捷徑。",
-                    "與人為善收穫滿滿正面回饋，人氣指數持續上升。"
-                ],
-                precautions: [
-                    "今日切忌拖延，想到就做能避免錯過良機。"
-                ],
-                fawnAdvice: "小鹿兒每日一句：今天是你創造美好記憶的一天，帶著微笑出發吧！",
-                highlightedBranch: dayBranch
+                palace: p,
+                chart: chart,
+                focusText: "農曆 \(safeDay) 日 流日值日氣候",
+                timeLabel: "農曆\(safeDay)日"
             )
         }
     }
-}
-
-fileprivate extension String {
-    func ifEmpty(_ fallback: String) -> String {
-        return self.isEmpty ? fallback : self
+    
+    // MARK: - 核心演算法：根據宮位類別 + 坐鎮星曜 + 四化煞曜 動態生成深度解析
+    private static func synthesizeReading(
+        scope: TimelineScope,
+        palace: PalaceData,
+        chart: AstrolabeChart,
+        focusText: String,
+        timeLabel: String,
+        annualYear: Int? = nil
+    ) -> TimelineFortuneReading {
+        
+        let branch = palace.earthlyBranch
+        let palaceType = palace.type
+        let majorStars = palace.majorStars
+        let luckyStars = palace.luckyStars
+        let fierceStars = palace.fierceStars
+        
+        let majorNames = majorStars.map { $0.name }
+        let starsStr = majorStars.map {
+            let b = $0.brightness != nil ? "[\($0.brightness!.rawValue)]" : ""
+            let tf = $0.natalTransformation != nil ? " 化\($0.natalTransformation!.rawValue)" : ""
+            return "\($0.name)\(b)\(tf)"
+        }.joined(separator: "、")
+        
+        let displayStars = starsStr.isEmpty ? "命無正曜 (借對宮星曜吉光照耀)" : starsStr
+        
+        let hasJi = palace.stars.contains { $0.natalTransformation == .ji }
+        let hasLu = palace.stars.contains { $0.natalTransformation == .lu }
+        let hasQuan = palace.stars.contains { $0.natalTransformation == .quan }
+        let hasKe = palace.stars.contains { $0.natalTransformation == .ke }
+        
+        // 1. 動態主標題
+        let headline = buildHeadline(
+            scope: scope,
+            timeLabel: timeLabel,
+            palaceType: palaceType,
+            majorNames: majorNames,
+            hasLu: hasLu,
+            hasJi: hasJi,
+            hasQuan: hasQuan
+        )
+        
+        // 2. 動態白話深度詳解
+        let overview = buildOverview(
+            scope: scope,
+            timeLabel: timeLabel,
+            palace: palace,
+            displayStars: displayStars,
+            majorNames: majorNames,
+            hasLu: hasLu,
+            hasJi: hasJi,
+            hasQuan: hasQuan,
+            hasKe: hasKe
+        )
+        
+        // 3. 機遇與利好
+        let opportunities = buildOpportunities(
+            palaceType: palaceType,
+            majorNames: majorNames,
+            luckyStars: luckyStars,
+            hasLu: hasLu,
+            hasQuan: hasQuan
+        )
+        
+        // 4. 暗礁與避坑
+        let precautions = buildPrecautions(
+            palaceType: palaceType,
+            majorNames: majorNames,
+            fierceStars: fierceStars,
+            hasJi: hasJi
+        )
+        
+        // 5. 小鹿兒專屬溫馨指引
+        let fawnAdvice = buildFawnAdvice(
+            scope: scope,
+            palaceType: palaceType,
+            hasJi: hasJi,
+            majorNames: majorNames
+        )
+        
+        let palaceTitle = "\(scope.rawValue)焦點：\(palaceType.name) (\(branch.name)宮)"
+        
+        return TimelineFortuneReading(
+            scope: scope,
+            currentFocusText: focusText,
+            targetPalace: palace,
+            palaceName: palaceTitle,
+            starsDisplay: displayStars,
+            headline: headline,
+            plainOverview: overview,
+            opportunities: opportunities,
+            precautions: precautions,
+            fawnAdvice: fawnAdvice,
+            highlightedBranch: branch
+        )
+    }
+    
+    // MARK: - 動態標題建構
+    private static func buildHeadline(
+        scope: TimelineScope,
+        timeLabel: String,
+        palaceType: PalaceType,
+        majorNames: [String],
+        hasLu: Bool,
+        hasJi: Bool,
+        hasQuan: Bool
+    ) -> String {
+        let starsKeyword = majorNames.prefix(2).joined()
+        let starTag = starsKeyword.isEmpty ? "星曜借照" : "【\(starsKeyword)】"
+        
+        if hasLu {
+            return "\(starTag) \(timeLabel)逢化祿吉慶，\(palaceType.name)生機勃發收穫豐碩"
+        }
+        if hasQuan {
+            return "\(starTag) \(timeLabel)權柄在握，\(palaceType.name)雷厲風行拓局先鋒"
+        }
+        if hasJi {
+            return "\(starTag) \(timeLabel)修心蓄力期，\(palaceType.name)以穩為上防暗礁波折"
+        }
+        
+        switch palaceType {
+        case .career:
+            return "\(starTag) \(timeLabel)行至官祿主場：事業突破在即，才幹展露贏得信任"
+        case .wealth:
+            return "\(starTag) \(timeLabel)聚焦財帛運轉：求財管道明朗，穩紮穩打積累基石"
+        case .marriage:
+            return "\(starTag) \(timeLabel)緣牽夫妻情誼：以心印心相惜，共築溫暖情感港灣"
+        case .travel:
+            return "\(starTag) \(timeLabel)出門吉星相照：異地開拓順遂，動態交流打開格局"
+        case .property:
+            return "\(starTag) \(timeLabel)安固田宅基業：聚財安家之時，居家溫馨福澤庇蔭"
+        case .health:
+            return "\(starTag) \(timeLabel)調和身心元氣：順應四季節奏，養精蓄銳厚積薄發"
+        case .friends:
+            return "\(starTag) \(timeLabel)人脈圈層流轉：良師益友相攜，貴人提攜共贏契機"
+        case .happiness:
+            return "\(starTag) \(timeLabel)心靈福澤充盈：放寬心胸自洽，精神富足樂得自在"
+        case .life:
+            return "\(starTag) \(timeLabel)本命元辰閃耀：立足核心原則，開拓個人獨特天地"
+        default:
+            return "\(starTag) \(timeLabel)臨\(palaceType.name)：順應星勢節奏，步步落實漸入佳境"
+        }
+    }
+    
+    // MARK: - 動態白話詳解
+    private static func buildOverview(
+        scope: TimelineScope,
+        timeLabel: String,
+        palace: PalaceData,
+        displayStars: String,
+        majorNames: [String],
+        hasLu: Bool,
+        hasJi: Bool,
+        hasQuan: Bool,
+        hasKe: Bool
+    ) -> String {
+        let pName = palace.type.name
+        let starsDesc: String
+        if majorNames.contains("紫微") || majorNames.contains("天府") {
+            starsDesc = "貴星坐鎮，自帶沉穩格局與開拓擔當，易獲貴人賞識與同儕信賴。"
+        } else if majorNames.contains("武曲") || majorNames.contains("太陰") {
+            starsDesc = "財星照耀，注重實質成果與資源沉澱，善於在變局中捕捉務實商機。"
+        } else if majorNames.contains("天機") || majorNames.contains("巨門") {
+            starsDesc = "智慧與策劃星曜活躍，思維敏捷清晰，能靠優異的談判與方案規劃出奇制勝。"
+        } else if majorNames.contains("太陽") || majorNames.contains("天梁") {
+            starsDesc = "浩然正氣與庇蔭星臨門，樂於助人累積深厚福德，出外逢凶化吉。"
+        } else if majorNames.contains("七殺") || majorNames.contains("破軍") || majorNames.contains("貪狼") {
+            starsDesc = "殺破狼生機躍動，破除陳規舊習、主動求新求變，具有驚人的開拓爆發力。"
+        } else {
+            starsDesc = "星曜氣場平和，借對宮吉曜照拂，處事順遂圓融、彈性極大。"
+        }
+        
+        var transDesc = ""
+        if hasLu { transDesc += " 本宮逢生年化祿，財祿與人緣如虎添翼，是全力推進目標的最佳時機！" }
+        if hasQuan { transDesc += " 宮內坐鎮化權，主導權與執行力極強，宜把握競爭先機。" }
+        if hasKe { transDesc += " 遇化科吉曜，文思泉湧、考運考績順遂，美名廣傳。" }
+        if hasJi { transDesc += " 逢化忌干擾，提示此階段切勿心浮氣躁，重大決定宜三思而後行，穩健是第一要務。" }
+        
+        switch scope {
+        case .natal:
+            return "你的本命元辰由 \(displayStars) 鎮守，為一生的性格內核與天賦底層代碼。\(starsDesc)\(transDesc) 任何大限流年的起伏皆以本命格局為根基，只要認清自我長處並持續深耕，自能成就不凡人生！"
+        case .decade:
+            return "在 \(timeLabel) 這關鍵十年中，時空核心聚焦於【\(pName)】所管轄的生命領域。此十年由 \(displayStars) 牽動，\(starsDesc)\(transDesc) 適合鎖定長期核心賽道，建立不可替代的專業護城河。"
+        case .annual:
+            return "西曆 \(timeLabel)，你的流年命宮行至 \(palace.earthlyBranch.name) 宮，正好對應本命【\(pName)】。受 \(displayStars) 氣場所引領，\(starsDesc)\(transDesc) 整體年度節奏鮮明，務必抓住核心矛盾集中發力！"
+        case .minor:
+            return "小限反映 \(timeLabel) 的個人內心心境、情緒起伏與健康微氣候。小限行至【\(pName)】，宮內見 \(displayStars)。\(starsDesc)\(transDesc) 宜多傾聽內在真實聲音，注重身心放鬆與情緒平衡。"
+        case .monthly:
+            return "農曆 \(timeLabel) 運勢行至 \(palace.earthlyBranch.name) 宮【\(pName)】。受 \(displayStars) 值月主導，\(starsDesc)\(transDesc) 本月節奏緊湊明快，適合把積累的待辦要務逐一落地執行。"
+        case .daily:
+            return "今日流日氣場專注於【\(pName)】，由 \(displayStars) 值日守護。\(starsDesc)\(transDesc) 直覺與行動力在線，適合做出關鍵決策與落實今日核心任務！"
+        }
+    }
+    
+    // MARK: - 動態機遇
+    private static func buildOpportunities(
+        palaceType: PalaceType,
+        majorNames: [String],
+        luckyStars: [StarItem],
+        hasLu: Bool,
+        hasQuan: Bool
+    ) -> [String] {
+        var list: [String] = []
+        
+        switch palaceType {
+        case .career:
+            list.append("職場上有望承接核心業務或獲得晉升拔擢，發揮關鍵影響力。")
+            list.append("專業技能備受同行或長官認可，能建立起無可替代的個人信譽。")
+        case .wealth:
+            list.append("求財管道多元通達，適合推進穩健理財計畫或開啟副業獲利。")
+            list.append("對市場價值具備敏銳嗅覺，能做出精準務實的財務決策。")
+        case .marriage:
+            list.append("親密關係迎來深度溝通契機，能增進彼此默契與長遠安全感。")
+            list.append("單身者容易在志趣相投的圈層中結識成熟且具包容力的優質良緣。")
+        case .travel:
+            list.append("出外公差、遠行求學或跨領域探索運氣極佳，能拓寬眼界與格局。")
+            list.append("異地貴人主動釋放善意，跨界合作容易談成重大共識。")
+        case .friends:
+            list.append("能結識視野開闊的同頻夥伴，同儕互助協同效應顯著。")
+            list.append("適合組織團隊或參與優質社群，人脈資源將轉化為實質助力。")
+        default:
+            list.append("行事果決有條理，能迅速排除日常障礙並贏得身邊人的支持。")
+            list.append("心態積極樂觀，面對突發狀況能隨機應變、化被動為主動。")
+        }
+        
+        if hasLu || hasQuan {
+            list.append("自帶旺氣光環，關鍵時刻總有長輩或關鍵資源主動到位扶持。")
+        }
+        if !luckyStars.isEmpty {
+            list.append("吉曜拱照，文書簽約、考試合格或重要認證皆能順利過關。")
+        }
+        
+        return Array(list.prefix(3))
+    }
+    
+    // MARK: - 動態暗礁與避坑
+    private static func buildPrecautions(
+        palaceType: PalaceType,
+        majorNames: [String],
+        fierceStars: [StarItem],
+        hasJi: Bool
+    ) -> [String] {
+        var list: [String] = []
+        
+        if hasJi {
+            list.append("此階段切忌急躁冒進或跟風投資，重要條款與金錢往來務必白紙黑字。")
+            list.append("溝通時保持心平氣和，切莫因口直心快而引發不必要的口舌誤會。")
+        }
+        
+        if !fierceStars.isEmpty {
+            let fierceNames = fierceStars.map { $0.name }.joined(separator: "、")
+            list.append("宮逢煞曜（\(fierceNames)），需防範突發急躁、情緒緊繃或交通行車安全。")
+        }
+        
+        switch palaceType {
+        case .career:
+            list.append("切莫事必躬親導致體力透支，適時授權更能維持高效領導力。")
+        case .wealth:
+            list.append("嚴拒高槓桿賭徒心態與熟人借貸代墊，守住流動資金才是真正贏家。")
+        case .marriage:
+            list.append("遇爭執多給彼此緩衝空間，切莫在盛怒之下做出過激承諾或決斷。")
+        case .health:
+            list.append("注意規律作息與飲食均衡，及時抒解肩頸疲勞與精神壓力。")
+        default:
+            if list.isEmpty {
+                list.append("行事切忌三分鐘熱度，維持專注度方能收穫最甜美果實。")
+            }
+        }
+        
+        return Array(list.prefix(2))
+    }
+    
+    // MARK: - 動態小鹿兒溫馨錦囊
+    private static func buildFawnAdvice(
+        scope: TimelineScope,
+        palaceType: PalaceType,
+        hasJi: Bool,
+        majorNames: [String]
+    ) -> String {
+        if hasJi {
+            return "小鹿兒特別叮嚀：化忌是老天爺給予的沉澱修煉禮物！放慢腳步、深呼吸，不爭一時長短，熬過風雨便是繁花似錦！"
+        }
+        switch scope {
+        case .annual:
+            return "小鹿兒流年錦囊：今年是開拓視野的幸運年份！多穿搭大地色與墨綠系，常帶微笑，身邊處處皆是你的開運貴人！"
+        case .monthly:
+            return "小鹿兒流月叮嚀：這個月行動力滿分！給自己泡一杯清香溫茶，踏實走好每一步，幸運就在前方等著你！"
+        case .daily:
+            return "小鹿兒每日一句：今天是你創造美好記憶的一天，順心而行、善待自己，美好自會如約而至！"
+        case .decade:
+            return "小鹿兒大限錦囊：人生十年一大變！選對方向、專注深耕，時間會給出最驚喜的答案！"
+        default:
+            return "小鹿兒心靈寄語：認同自己的獨特步伐，順應天時、知命造命，你永遠是自己生命中最棒的舵手！"
+        }
     }
 }

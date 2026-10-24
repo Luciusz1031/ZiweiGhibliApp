@@ -30,9 +30,8 @@ public struct ContentView: View {
     @State private var isShowingPatterns: Bool = false
     @State private var isShowingSettings: Bool = false
     
-    // PDF 匯出與分享狀態
-    @State private var isShowingPDFPreview: Bool = false
-    @State private var generatedPDFURL: URL? = nil
+    // 分享中心狀態
+    @State private var isShowingShareSheet: Bool = false
     
     // 大限與流年時光輪盤狀態
     @State private var luckMode: LuckMode = .natal
@@ -79,8 +78,11 @@ public struct ContentView: View {
                         Spacer()
                         
                         HStack(spacing: 12) {
-                            // PDF 匯出與社群分享按鈕
-                            Button(action: exportPDF) {
+                            // 命盤分享中心按鈕 (純文字/LINE/一鍵複製/PDF)
+                            Button(action: {
+                                HapticManager.triggerImpact(style: .medium)
+                                isShowingShareSheet = true
+                            }) {
                                 Image(systemName: "square.and.arrow.up")
                                     .font(.system(size: 15, weight: .semibold))
                                     .foregroundColor(GhibliTheme.forestMoss)
@@ -193,24 +195,13 @@ public struct ContentView: View {
                         )
                     })
                 }
-                .sheet(isPresented: $isShowingPDFPreview) {
-                    if let url = generatedPDFURL {
-                        PDFExportPreviewSheet(pdfURL: url)
-                    }
+                .sheet(isPresented: $isShowingShareSheet) {
+                    AstrolabeShareSheet(chart: activeChart)
                 }
             } else {
                 // 輸入出生資料畫面
                 BirthInputView(chart: $chart, schoolConfig: $schoolConfig)
             }
-        }
-    }
-    
-    private func exportPDF() {
-        guard let activeChart = chart else { return }
-        HapticManager.triggerImpact(style: .medium)
-        if let url = PDFReportGenerator.generatePDF(for: activeChart) {
-            generatedPDFURL = url
-            isShowingPDFPreview = true
         }
     }
 }
