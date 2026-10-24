@@ -13,6 +13,17 @@ jobs:
       - name: 檢出專案代碼 (Checkout)
         uses: actions/checkout@v4
 
+      - name: 檢查並選擇最佳 Xcode 版本
+        run: |
+          if [ -d "/Applications/Xcode_16.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+          elif [ -d "/Applications/Xcode_16.0.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+          elif [ -d "/Applications/Xcode_16.1.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer
+          fi
+          xcodebuild -version
+
       - name: 安裝 XcodeGen
         run: |
           brew install xcodegen
@@ -20,10 +31,11 @@ jobs:
       - name: 生成 Xcode 專案檔 (Generate Xcode Project)
         run: |
           xcodegen generate
+          # 雙重保險：將 Xcode 16 的 format 77 強制替換為 Xcode 15 相容的 60
+          sed -i '' 's/objectVersion = 77;/objectVersion = 60;/g' ZiweiGhibliApp.xcodeproj/project.pbxproj || true
 
-      - name: 檢查 Xcode 版本與 Scheme
+      - name: 驗證 Xcode 專案結構
         run: |
-          xcodebuild -version
           xcodebuild -list -project ZiweiGhibliApp.xcodeproj
 
       - name: 編譯 iOS Release Archive (Unsigned)

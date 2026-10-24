@@ -3,6 +3,7 @@ options:
   bundleIdPrefix: com.ghibli.ziwei
   deploymentTarget:
     iOS: "16.0"
+  projectFormat: 60 # 強制生成 Xcode 15 相容的專案格式 (避免 Xcode 16 的 format 77 錯誤)
 
 settings:
   base:
