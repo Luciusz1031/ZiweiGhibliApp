@@ -100,7 +100,7 @@ public struct VerticalPalaceListView: View {
             Divider()
             
             // 白話宮位核心定位
-            Text(interp.coreTheme)
+            Text(interp.lifeTheme)
                 .font(.system(size: 13, weight: .semibold, design: .serif))
                 .foregroundColor(GhibliTheme.forestMoss)
                 .lineSpacing(3)
@@ -197,7 +197,7 @@ public struct VerticalPalaceListView: View {
                         }
                     }
                     
-                    Text("大限年齡：\(palace.decadeRange.lowerBound) - \(palace.decadeRange.upperBound) 歲")
+                    Text("大限年齡：\(palace.decadeStartAge) - \(palace.decadeEndAge) 歲")
                         .font(GhibliTheme.noteFont(size: 10))
                         .foregroundColor(GhibliTheme.magicBrass)
                 }
