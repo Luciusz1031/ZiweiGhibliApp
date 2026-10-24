@@ -4,18 +4,28 @@ public struct VerticalPalaceListView: View {
     public let chart: AstrolabeChart
     public var onSelectPalace: (PalaceData) -> Void
     
-    // 預設將命宮、事業、財帛、夫妻排在前面，或依序滾動
+    // 當前選中的宮位地支 (預設為命宮)
+    @State private var selectedBranch: EarthlyBranch
+    
+    public init(chart: AstrolabeChart, onSelectPalace: @escaping (PalaceData) -> Void) {
+        self.chart = chart
+        self.onSelectPalace = onSelectPalace
+        self._selectedBranch = State(initialValue: chart.lifePalaceBranch)
+    }
+    
     public var body: some View {
         ScrollViewReader { proxy in
             VStack(spacing: 0) {
-                // 1. 頂部水平快速切換快捷導航
+                // 1. 頂部水平快速切換快捷導航欄 (即時高亮選中宮位並捲動到對應內容)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(chart.palaces) { palace in
+                            let isSelected = (selectedBranch == palace.earthlyBranch)
                             Button(action: {
                                 HapticManager.triggerSelection()
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                    proxy.scrollTo(palace.id, anchor: .top)
+                                selectedBranch = palace.earthlyBranch
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                    proxy.scrollTo(palace.earthlyBranch, anchor: .top)
                                 }
                             }) {
                                 HStack(spacing: 4) {
@@ -23,6 +33,7 @@ public struct VerticalPalaceListView: View {
                                         .font(.system(size: 13))
                                     Text(palace.type.name)
                                         .font(GhibliTheme.bodyFont(size: 12))
+                                    
                                     if palace.isLifePalace {
                                         Text("命")
                                             .font(.system(size: 8, weight: .bold))
@@ -33,17 +44,18 @@ public struct VerticalPalaceListView: View {
                                             .clipShape(Circle())
                                     }
                                 }
-                                .padding(.horizontal, 10)
+                                .padding(.horizontal, 11)
                                 .padding(.vertical, 6)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(palace.isLifePalace ? GhibliTheme.parchmentCard : Color.white.opacity(0.8))
+                                        .fill(isSelected ? GhibliTheme.forestMoss : GhibliTheme.parchmentCard)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 12)
-                                                .stroke(palace.isLifePalace ? GhibliTheme.magicBrass : GhibliTheme.borderBrass.opacity(0.5), lineWidth: 1)
+                                                .stroke(isSelected ? GhibliTheme.magicBrass : GhibliTheme.borderBrass.opacity(0.4), lineWidth: isSelected ? 1.5 : 1)
                                         )
                                 )
-                                .foregroundColor(GhibliTheme.forestMoss)
+                                .foregroundColor(isSelected ? .white : GhibliTheme.forestMoss)
+                                .shadow(color: isSelected ? Color.black.opacity(0.12) : Color.clear, radius: 2, y: 1)
                             }
                         }
                     }
@@ -52,14 +64,15 @@ public struct VerticalPalaceListView: View {
                 }
                 .background(GhibliTheme.parchmentBg)
                 
-                // 2. 直列卡片資訊流 (垂直滾動，填滿螢幕空間)
+                // 2. 直列卡片資訊流 (使用標準 VStack 確保所有宮位節點已載入，精準快速平滑捲動)
                 ScrollView(.vertical, showsIndicators: false) {
-                    LazyVStack(spacing: 14) {
+                    VStack(spacing: 14) {
                         // 命盤總覽鹿兒問候卡
                         headerOverviewCard
                         
                         // 依序展示 12 宮位完整卡片
                         ForEach(chart.palaces) { palace in
+                            let isCardSelected = (selectedBranch == palace.earthlyBranch)
                             let interp = PlainLanguageInterpreter.interpret(palace: palace, chart: chart)
                             
                             VStack(alignment: .leading, spacing: 10) {
@@ -99,44 +112,50 @@ public struct VerticalPalaceListView: View {
                                                 }
                                             }
                                             
-                                            Text(interp.lifeTheme)
-                                                .font(GhibliTheme.bodyFont(size: 11))
+                                            Text("大限年齡：\(palace.decadeRange.lowerBound) - \(palace.decadeRange.upperBound) 歲")
+                                                .font(GhibliTheme.noteFont(size: 10))
                                                 .foregroundColor(GhibliTheme.magicBrass)
                                         }
                                     }
                                     
                                     Spacer()
                                     
-                                    VStack(alignment: .trailing, spacing: 2) {
-                                        Text(interp.strengthTag)
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundColor(GhibliTheme.calciferOrange)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(GhibliTheme.calciferOrange.opacity(0.12))
-                                            .clipShape(Capsule())
-                                        
-                                        Text("大限 \(palace.decadeStartAge)-\(palace.decadeEndAge)歲")
-                                            .font(GhibliTheme.noteFont(size: 10))
-                                            .foregroundColor(GhibliTheme.forestMoss.opacity(0.6))
+                                    // 點選查閱古籍/天紀深度講義
+                                    Button(action: {
+                                        HapticManager.triggerImpact(style: .light)
+                                        selectedBranch = palace.earthlyBranch
+                                        onSelectPalace(palace)
+                                    }) {
+                                        HStack(spacing: 3) {
+                                            Text("天紀古籍")
+                                                .font(GhibliTheme.noteFont(size: 10))
+                                            Image(systemName: "chevron.right")
+                                                .font(.system(size: 8))
+                                        }
+                                        .foregroundColor(GhibliTheme.magicBrass)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(GhibliTheme.magicBrass.opacity(0.1))
+                                        .cornerRadius(6)
                                     }
                                 }
                                 
                                 Divider()
-                                    .background(GhibliTheme.borderBrass.opacity(0.5))
                                 
-                                // 星曜與四化標籤
-                                HStack(spacing: 8) {
-                                    if palace.majorStars.isEmpty {
-                                        Text("無主星（借對宮星曜照耀，適應力強）")
-                                            .font(GhibliTheme.noteFont(size: 12))
-                                            .foregroundColor(GhibliTheme.forestMoss.opacity(0.7))
-                                    } else {
+                                // 白話宮位核心定位
+                                Text(interp.coreTheme)
+                                    .font(.system(size: 13, weight: .semibold, design: .serif))
+                                    .foregroundColor(GhibliTheme.forestMoss)
+                                    .lineSpacing(3)
+                                
+                                // 宮內主星與星宿標籤
+                                if !palace.majorStars.isEmpty {
+                                    HStack(spacing: 6) {
                                         ForEach(palace.majorStars) { star in
-                                            HStack(spacing: 3) {
+                                            HStack(spacing: 2) {
                                                 Text(star.name)
                                                     .font(GhibliTheme.titleFont(size: 14))
-                                                    .foregroundColor(GhibliTheme.forestMoss)
+                                                    .foregroundColor(GhibliTheme.spiritPurple)
                                                 
                                                 if let b = star.brightness {
                                                     Text(b.rawValue)
@@ -153,22 +172,6 @@ public struct VerticalPalaceListView: View {
                                             .background(Color.white.opacity(0.7))
                                             .cornerRadius(6)
                                         }
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    // 點選查閱古籍/天紀深度講義
-                                    Button(action: {
-                                        HapticManager.triggerImpact(style: .light)
-                                        onSelectPalace(palace)
-                                    }) {
-                                        HStack(spacing: 3) {
-                                            Text("天紀古籍")
-                                                .font(GhibliTheme.noteFont(size: 10))
-                                            Image(systemName: "chevron.right")
-                                                .font(.system(size: 8))
-                                        }
-                                        .foregroundColor(GhibliTheme.magicBrass)
                                     }
                                 }
                                 
@@ -209,8 +212,16 @@ public struct VerticalPalaceListView: View {
                                 .cornerRadius(10)
                             }
                             .padding(12)
-                            .parchmentStyle(isHighlighted: palace.isLifePalace)
-                            .id(palace.id)
+                            .parchmentStyle(isHighlighted: isCardSelected || palace.isLifePalace)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(isCardSelected ? GhibliTheme.calciferOrange : Color.clear, lineWidth: 2)
+                            )
+                            .id(palace.earthlyBranch)
+                            .onTapGesture {
+                                HapticManager.triggerImpact(style: .light)
+                                selectedBranch = palace.earthlyBranch
+                            }
                         }
                     }
                     .padding(.horizontal, 12)
@@ -223,30 +234,27 @@ public struct VerticalPalaceListView: View {
     
     // 命盤頂部小鹿兒總覽歡迎卡
     private var headerOverviewCard: some View {
-        HStack(spacing: 12) {
-            CuteDeerMascotView(size: 60)
+        HStack(alignment: .top, spacing: 10) {
+            CuteDeerMascotView(size: 48)
             
             VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text("小鹿兒為你解盤")
-                        .font(GhibliTheme.titleFont(size: 16))
-                        .foregroundColor(GhibliTheme.forestMoss)
-                    Spacer()
-                    Text(chart.elementBureau.name)
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(GhibliTheme.calciferOrange)
-                }
+                Text("鹿兒為您奉上十二宮解說")
+                    .font(GhibliTheme.titleFont(size: 14))
+                    .foregroundColor(GhibliTheme.forestMoss)
                 
-                Text("\(chart.gender.rawValue)・\(chart.lunarInfo.baZiString)")
-                    .font(GhibliTheme.noteFont(size: 11))
-                    .foregroundColor(GhibliTheme.forestMoss.opacity(0.75))
-                
-                Text("命主：\(chart.lifeMasterStar)  身主：\(chart.bodyMasterStar)  (滑動探索12宮白話解說)")
-                    .font(GhibliTheme.noteFont(size: 10))
-                    .foregroundColor(GhibliTheme.magicBrass)
+                Text("點選上方任一宮位標籤，即可快速滑動至該宮位！點擊右上方「天紀古籍」可隨時研讀倪師天紀專門講義～")
+                    .font(GhibliTheme.bodyFont(size: 11.5))
+                    .foregroundColor(GhibliTheme.forestMoss.opacity(0.85))
+                    .lineSpacing(2)
             }
         }
         .padding(12)
-        .parchmentStyle(isHighlighted: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(GhibliTheme.parchmentCard)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(GhibliTheme.borderBrass.opacity(0.6), lineWidth: 1)
+        )
     }
 }

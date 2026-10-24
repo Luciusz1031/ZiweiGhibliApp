@@ -12,15 +12,23 @@ public class ZiweiEngine {
         config: SchoolConfig = .default
     ) -> AstrolabeChart {
         
+        // 若不知道出生時刻，則統一以子時 (23:00-01:00，取當日00:30早子時) 起盤
+        let effectiveDate: Date
+        if isUnknownHour {
+            effectiveDate = Calendar.current.date(bySettingHour: 0, minute: 30, second: 0, of: birthDate) ?? birthDate
+        } else {
+            effectiveDate = birthDate
+        }
+        
         // 1. 真太陽時校準
         let solarCorrection = SolarTimeCalculator.calculateTrueSolarTime(
-            for: birthDate,
+            for: effectiveDate,
             city: city,
             adjustDST: config.autoAdjustDST
         )
         
-        let targetDate = config.useTrueSolarTime ? solarCorrection.trueSolarDate : birthDate
-        let hourBranch = solarCorrection.hourBranch
+        let targetDate = config.useTrueSolarTime ? solarCorrection.trueSolarDate : effectiveDate
+        let hourBranch = isUnknownHour ? EarthlyBranch.zi : solarCorrection.hourBranch
         
         // 2. 轉換為農曆干支資訊
         let lunarInfo = ChineseCalendarHelper.getLunarDateInfo(

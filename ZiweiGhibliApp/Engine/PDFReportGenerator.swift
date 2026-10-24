@@ -105,7 +105,7 @@ public class PDFReportGenerator {
         "局數：\(chart.elementBureau.name)".draw(at: CGPoint(x: col2X, y: infoY), withAttributes: orangeAttrs)
         infoY += 15
         
-        let birthStr = chart.isUnknownHour ? "\(df.string(from: chart.solarDate)) (時辰未定・午時基準)" : "\(df.string(from: chart.solarDate))"
+        let birthStr = chart.isUnknownHour ? "\(df.string(from: chart.solarDate)) (時辰未定・子時起盤)" : "\(df.string(from: chart.solarDate))"
         "公曆生辰：\(birthStr)".draw(at: CGPoint(x: col1X, y: infoY), withAttributes: textAttrs)
         "出生地點：\(chart.city.name) (經度 \(String(format: "%.1f°", chart.city.longitude)))".draw(at: CGPoint(x: col2X, y: infoY), withAttributes: textAttrs)
         infoY += 15

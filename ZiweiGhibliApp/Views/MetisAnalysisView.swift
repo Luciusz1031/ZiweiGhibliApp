@@ -65,7 +65,7 @@ public struct MetisAnalysisView: View {
                         }
                         
                         if chart.isUnknownHour {
-                            Text("[時辰基準：午時]")
+                            Text("[時辰基準：子時]")
                                 .font(.system(size: 9.5, weight: .medium))
                                 .foregroundColor(GhibliTheme.calciferOrange)
                                 .padding(.horizontal, 4)

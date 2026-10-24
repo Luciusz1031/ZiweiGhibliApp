@@ -22,9 +22,9 @@ public struct SynastryView: View {
     }
     
     public var body: some View {
-        // 依據當前輸入即時排盤 Person B (若不知道時辰則以午時基準排盤)
+        // 依據當前輸入即時排盤 Person B (若不知道時辰則以子時 23:00-01:00 基準排盤)
         let bDate = partnerUnknownHour ?
-            (Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: partnerDate) ?? partnerDate) :
+            (Calendar.current.date(bySettingHour: 0, minute: 30, second: 0, of: partnerDate) ?? partnerDate) :
             partnerDate
         
         let personB = ZiweiEngine.generateChart(
@@ -313,14 +313,14 @@ public struct SynastryView: View {
                     DatePicker("出生日期", selection: $partnerDate, displayedComponents: [.date])
                         .environment(\.locale, Locale(identifier: "zh_Hant_TW"))
                     
-                    Toggle("不知道出生時刻", isOn: $partnerUnknownHour)
+                    Toggle("不知道出生時間，以子時（23:00-01:00）起盤", isOn: $partnerUnknownHour)
                         .tint(GhibliTheme.calciferOrange)
                     
                     if !partnerUnknownHour {
                         DatePicker("出生時刻", selection: $partnerDate, displayedComponents: [.hourAndMinute])
                             .environment(\.locale, Locale(identifier: "zh_Hant_TW"))
                     } else {
-                        Text("🌟 以正午（午時 12:00）為基準排盤")
+                        Text("🌟 以子時（23:00-01:00）為基準排盤")
                             .font(.system(size: 12))
                             .foregroundColor(GhibliTheme.magicBrass)
                     }

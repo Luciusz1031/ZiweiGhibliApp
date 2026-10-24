@@ -143,7 +143,7 @@ public struct MetisChartGridView: View {
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(GhibliTheme.calciferOrange)
                     if chart.isUnknownHour {
-                        Text("[午時]")
+                        Text("[子時]")
                             .font(.system(size: 9))
                             .foregroundColor(GhibliTheme.spiritPurple)
                     }

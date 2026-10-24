@@ -36,7 +36,7 @@ public struct BirthInputView: View {
             CityLocation(name: "自訂地點", region: "自訂", longitude: customLongitude, latitude: 25.0) :
             selectedCity
         let targetDate = isUnknownHour ?
-            (Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: birthDate) ?? birthDate) :
+            (Calendar.current.date(bySettingHour: 0, minute: 30, second: 0, of: birthDate) ?? birthDate) :
             birthDate
         return SolarTimeCalculator.calculateTrueSolarTime(for: targetDate, city: city, adjustDST: schoolConfig.autoAdjustDST)
     }
@@ -141,17 +141,25 @@ public struct BirthInputView: View {
                             
                             Divider()
                             
-                            // 不知道出生時刻開關
-                            Toggle(isOn: $isUnknownHour) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "clock.badge.questionmark")
-                                        .foregroundColor(GhibliTheme.calciferOrange)
-                                    Text("不知道出生時刻")
-                                        .font(GhibliTheme.bodyFont(size: 14))
+                            // 不知道出生時間選擇框 (依需求：以子時 23:00-01:00 起盤)
+                            Button(action: {
+                                HapticManager.triggerImpact(style: .light)
+                                isUnknownHour.toggle()
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: isUnknownHour ? "checkmark.square.fill" : "square")
+                                        .font(.system(size: 18))
+                                        .foregroundColor(isUnknownHour ? .blue : GhibliTheme.forestMoss.opacity(0.6))
+                                    
+                                    Text("不知道出生時間，以子時（23:00-01:00）起盤")
+                                        .font(GhibliTheme.bodyFont(size: 13.5))
                                         .foregroundColor(GhibliTheme.forestMoss)
+                                    
+                                    Spacer()
                                 }
                             }
-                            .tint(GhibliTheme.calciferOrange)
+                            .buttonStyle(.plain)
+                            .padding(.vertical, 2)
                             
                             if isUnknownHour {
                                 // 溫馨提示
@@ -160,7 +168,7 @@ public struct BirthInputView: View {
                                         .foregroundColor(GhibliTheme.magicBrass)
                                         .font(.system(size: 13))
                                         .padding(.top, 2)
-                                    Text("🌟 已開啟「不知道出生時刻」：紫微斗數需時辰定命身宮與部分輔星。小鹿兒將採用傳統正午（午時 12:00，陽氣最旺）為您基準排盤，生年四化、五行局、命格骨架完整呈現。排盤後亦可於時光輪盤切換時辰校準！")
+                                    Text("🌟 已開啟「不知道出生時間」：將以子時（23:00-01:00）為基準為您排盤。排盤後亦可於時光輪盤隨時切換十二時辰進行定盤校驗！")
                                         .font(GhibliTheme.noteFont(size: 11.5))
                                         .foregroundColor(GhibliTheme.forestMoss.opacity(0.85))
                                         .lineSpacing(2)
@@ -214,7 +222,7 @@ public struct BirthInputView: View {
                                     .font(GhibliTheme.titleFont(size: 15))
                                     .foregroundColor(GhibliTheme.forestMoss)
                                 Spacer()
-                                Text(isUnknownHour ? "午時 (基準)" : (solarCorrection.hourBranch.name + "時"))
+                                Text(isUnknownHour ? "子時 (基準)" : (solarCorrection.hourBranch.name + "時"))
                                     .font(GhibliTheme.titleFont(size: 15))
                                     .foregroundColor(GhibliTheme.calciferOrange)
                                     .padding(.horizontal, 8)
@@ -284,7 +292,7 @@ public struct BirthInputView: View {
         HapticManager.triggerSuccess()
         let finalBirthDate: Date
         if isUnknownHour {
-            finalBirthDate = Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: birthDate) ?? birthDate
+            finalBirthDate = Calendar.current.date(bySettingHour: 0, minute: 30, second: 0, of: birthDate) ?? birthDate
         } else {
             finalBirthDate = birthDate
         }
