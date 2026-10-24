@@ -77,4 +77,7 @@ data class AstrolabeChart(
     val bodyMasterStar: String,
     val palaces: List<PalaceData>,
     val patterns: List<TianjiPattern>
-)
+) {
+    fun palace(branch: EarthlyBranch): PalaceData =
+        palaces.firstOrNull { it.earthlyBranch == branch } ?: palaces[0]
+}
