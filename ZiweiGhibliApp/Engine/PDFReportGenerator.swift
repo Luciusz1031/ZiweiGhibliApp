@@ -122,7 +122,6 @@ public class PDFReportGenerator {
         let gridWidth = pageWidth - (margin * 2)
         let cellSpacing: CGFloat = 3.0
         let cellSize = (gridWidth - (cellSpacing * 3)) / 4.0
-        let gridHeight = (cellSize * 4) + (cellSpacing * 3)
         let gridOriginY = currentY
         
         // 佈局座標映射 (0..3 欄與列)
@@ -183,7 +182,6 @@ public class PDFReportGenerator {
         
         var y = rect.origin.y + 3
         let x = rect.origin.x + 3
-        let w = rect.width - 6
         
         // 1. 宮名與大限
         let palaceName = palace.type.name + (palace.isLifePalace ? "[命]" : "") + (palace.isBodyPalace ? "[身]" : "")

@@ -46,11 +46,18 @@ public class ChineseCalendarHelper {
             targetDate = date.addingTimeInterval(3600) // 跨過零點進次日
         }
         
-        let components = chineseCalendar.dateComponents([.year, .month, .day, .isLeapMonth], from: targetDate)
+        let components: DateComponents
+        var isLeap = false
+        if #available(iOS 17.0, *) {
+            components = chineseCalendar.dateComponents([.year, .month, .day, .isLeapMonth], from: targetDate)
+            isLeap = components.isLeapMonth ?? false
+        } else {
+            components = chineseCalendar.dateComponents([.year, .month, .day], from: targetDate)
+            isLeap = components.isLeapMonth ?? false
+        }
         
         let lunarMonth = components.month ?? 1
         let lunarDay = components.day ?? 1
-        let isLeap = components.isLeapMonth ?? false
         
         // 年干支：以農曆年份為準
         // 西元紀年算干支 (西元 4 年為甲子年)
