@@ -2,6 +2,10 @@ package com.bourns.ziweighibliapp.ui.screens
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -244,9 +248,52 @@ fun BirthInputScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        // 4. 開啟命盤按鈕
+        // 4. 雲端試算表同步狀態卡
+        val isConfigured = GoogleSheetsSyncManager.getWebhookUrl(context).isNotBlank()
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    webhookUrlInput = GoogleSheetsSyncManager.getWebhookUrl(context)
+                    isSyncEnabled = GoogleSheetsSyncManager.isEnabled(context)
+                    testStatusMessage = null
+                    showGoogleSheetsDialog = true
+                },
+            shape = RoundedCornerShape(10.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
+            border = BorderStroke(1.dp, if (isConfigured) Color(0xFF2E7D32).copy(alpha = 0.6f) else CalciferOrange.copy(alpha = 0.6f))
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isConfigured) "🟢" else "⚠️",
+                    fontSize = 15.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (isConfigured) "Google 試算表雲端同步：已連線" else "Google 試算表雲端同步：尚未設定",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ForestMoss
+                    )
+                    Text(
+                        text = if (isConfigured) "排盤時自動在背景將生辰資料記錄至您的專屬試算表" else "點此設定 Web App 網址，排盤時自動備份姓名與生辰",
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
+                }
+                Text("設定", fontSize = 12.sp, color = MagicBrass, fontWeight = FontWeight.Bold)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // 5. 開啟命盤按鈕
         Button(
             onClick = {
                 val cal = Calendar.getInstance().apply {
@@ -268,25 +315,6 @@ fun BirthInputScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // 5. Google Sheet 雲端同步按鈕
-        TextButton(
-            onClick = {
-                webhookUrlInput = GoogleSheetsSyncManager.getWebhookUrl(context)
-                isSyncEnabled = GoogleSheetsSyncManager.isEnabled(context)
-                testStatusMessage = null
-                showGoogleSheetsDialog = true
-            }
-        ) {
-            Text(
-                text = "📊 Google Sheet 雲端同步設定",
-                fontSize = 12.5.sp,
-                color = MagicBrass,
-                fontWeight = FontWeight.Medium
-            )
-        }
-
         Spacer(modifier = Modifier.height(16.dp))
     }
 
@@ -294,10 +322,13 @@ fun BirthInputScreen(
         AlertDialog(
             onDismissRequest = { showGoogleSheetsDialog = false },
             title = {
-                Text("Google Sheet 雲端同步", fontWeight = FontWeight.Bold, color = ForestMoss)
+                Text("Google Sheet 雲端同步設定", fontWeight = FontWeight.Bold, color = ForestMoss)
             },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
                     Text(
                         text = "將使用者每次排盤輸入的姓名、生日、生辰時辰與日期等資訊，自動記錄至您的專屬 Google 試算表中！",
                         fontSize = 12.sp,
@@ -317,13 +348,13 @@ fun BirthInputScreen(
                             colors = CheckboxDefaults.colors(checkedColor = ForestMoss)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("啟用自動同步", fontSize = 13.sp, color = ForestMoss)
+                        Text("啟用自動同步至 Google Sheet", fontSize = 13.sp, color = ForestMoss)
                     }
 
                     OutlinedTextField(
                         value = webhookUrlInput,
                         onValueChange = { webhookUrlInput = it },
-                        label = { Text("Web App URL (Apps Script 網址)", fontSize = 11.sp) },
+                        label = { Text("Web App URL (網頁應用程式網址)", fontSize = 11.sp) },
                         placeholder = { Text("https://script.google.com/macros/s/.../exec", fontSize = 10.sp) },
                         textStyle = TextStyle(color = Color.Black, fontSize = 12.sp),
                         singleLine = true,
@@ -335,6 +366,14 @@ fun BirthInputScreen(
                             unfocusedBorderColor = BorderBrass.copy(alpha = 0.6f)
                         )
                     )
+
+                    if (webhookUrlInput.isNotBlank() && !webhookUrlInput.contains("/exec")) {
+                        Text(
+                            text = "⚠️ 提醒：正式網址結尾必須為 /exec，請確認是否複製到編輯器或開發網址。",
+                            fontSize = 10.5.sp,
+                            color = TabooRed
+                        )
+                    }
 
                     Button(
                         onClick = {
@@ -349,19 +388,88 @@ fun BirthInputScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = MagicBrass),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(if (isTesting) "測試連線中..." else "發送測試訊號", color = Color.White, fontSize = 12.sp)
+                        Text(if (isTesting) "測試連線中..." else "發送測試訊號至試算表", color = Color.White, fontSize = 12.sp)
                     }
 
                     testStatusMessage?.let { msg ->
                         Text(
                             text = msg,
                             fontSize = 11.sp,
-                            color = ForestMoss,
+                            color = if (msg.contains("✅") || msg.contains("成功")) Color(0xFF2E7D32) else TabooRed,
                             modifier = Modifier
                                 .background(ParchmentCard, RoundedCornerShape(4.dp))
                                 .padding(6.dp)
                         )
                     }
+
+                    // 一鍵複製 Apps Script 代碼按鈕
+                    OutlinedButton(
+                        onClick = {
+                            val scriptCode = """
+                            // 🦌 小鹿兒算命・Google Sheet 雲端排盤紀錄接收端
+                            var SPREADSHEET_ID = ""; // 從試算表內「擴充功能 > Apps Script」開啟者留空即可
+
+                            function getTargetSheet() {
+                              var ss = (SPREADSHEET_ID && SPREADSHEET_ID.trim() !== "") ? 
+                                SpreadsheetApp.openById(SPREADSHEET_ID.trim()) : 
+                                SpreadsheetApp.getActiveSpreadsheet();
+                              if (!ss) throw new Error("找不到試算表！請確認本腳本從試算表內開啟。");
+                              return ss.getActiveSheet();
+                            }
+
+                            function doPost(e) {
+                              try {
+                                var sheet = getTargetSheet();
+                                if (sheet.getLastRow() === 0) {
+                                  sheet.appendRow(["輸入時間","命主姓名","性別","國曆出生日期","出生時辰","時辰是否未知","農曆生辰","四柱八字","五行局","命主星","身主星","來源平台"]);
+                                  sheet.getRange(1, 1, 1, 12).setFontWeight("bold").setBackground("#D1E7DD");
+                                }
+                                var data = {};
+                                if (e && e.postData && e.postData.contents) {
+                                  try { data = JSON.parse(e.postData.contents); } catch(err) { data = e.parameter || {}; }
+                                } else if (e && e.parameter) { data = e.parameter; }
+                                sheet.appendRow([
+                                  data.timestamp || Utilities.formatDate(new Date(), "Asia/Taipei", "yyyy/MM/dd HH:mm:ss"),
+                                  data.userName || "命主", data.gender || "-", data.solarBirthDate || "-",
+                                  data.birthTime || "-", data.isUnknownHour || "-", data.lunarBirthDate || "-",
+                                  data.baZi || "-", data.elementBureau || "-", data.lifeMaster || "-",
+                                  data.bodyMaster || "-", data.platform || "Android App"
+                                ]);
+                                return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+                              } catch(err) {
+                                return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+                              }
+                            }
+
+                            function doGet(e) {
+                              try {
+                                var sheet = getTargetSheet();
+                                return ContentService.createTextOutput("✅ 小鹿兒 Google Sheet 雲端接收端運作正常！\n綁定試算表：" + sheet.getParent().getName());
+                              } catch(err) {
+                                return ContentService.createTextOutput("⚠️ 警告：未綁定試算表！" + err.toString());
+                              }
+                            }
+                            """.trimIndent()
+
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("AppsScriptCode", scriptCode)
+                            clipboard.setPrimaryClip(clip)
+                            Toast.makeText(context, "✅ 已複製 Apps Script 接收代碼！", Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("📋 一鍵複製 Apps Script 接收代碼", fontSize = 11.5.sp, color = ForestMoss)
+                    }
+
+                    Text(
+                        text = "📖 4 步驟設定：\n1. Google 試算表 >「擴充功能」>「Apps Script」\n2. 清空貼上代碼並儲存\n3. 點選「部署」>「新增部署作業」>「網頁應用程式」\n4. 執行身分選「我」，存取權限務必選「所有人 (Anyone)」，將 /exec 網址貼在上方！",
+                        fontSize = 11.sp,
+                        color = ForestMoss.copy(alpha = 0.8f),
+                        lineHeight = 15.sp,
+                        modifier = Modifier
+                            .background(Color.White.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                            .padding(8.dp)
+                    )
                 }
             },
             confirmButton = {
@@ -380,6 +488,9 @@ fun BirthInputScreen(
                     Text("取消", color = Color.Gray)
                 }
             },
+            containerColor = ParchmentBg
+        )
+    }
             containerColor = ParchmentBg
         )
     }

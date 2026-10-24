@@ -269,6 +269,38 @@ public struct BirthInputView: View {
                         .parchmentStyle(isHighlighted: true)
                         .padding(.horizontal)
                         
+                        // 雲端試算表同步狀態列
+                        Button(action: { isShowingGoogleSheetsSettings = true }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? "exclamationmark.icloud.fill" : "checkmark.icloud.fill")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? GhibliTheme.calciferOrange : Color(red: 0.18, green: 0.52, blue: 0.25))
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? "📊 Google 試算表雲端同步：尚未設定" : "📊 Google 試算表雲端同步：已連線")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundColor(GhibliTheme.forestMoss)
+                                    Text(GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? "點此設定 Web App 網址，每次排盤自動備份姓名與生辰" : "排盤時自動在背景將生辰資料記錄至您的專屬試算表")
+                                        .font(GhibliTheme.noteFont(size: 11))
+                                        .foregroundColor(Color.gray)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(GhibliTheme.magicBrass)
+                            }
+                            .padding(10)
+                            .background(Color.white.opacity(0.85))
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(GoogleSheetsSyncManager.shared.webhookUrl.isEmpty ? GhibliTheme.calciferOrange.opacity(0.6) : Color(red: 0.18, green: 0.52, blue: 0.25).opacity(0.6), lineWidth: 1)
+                            )
+                        }
+                        .padding(.horizontal)
+                        
                         // 6. 排盤按鈕
                         Button(action: generateChart) {
                             HStack(spacing: 8) {

@@ -98,8 +98,25 @@ object GoogleSheetsSyncManager {
         urlStr: String,
         onComplete: (Boolean, String) -> Unit
     ) {
-        if (urlStr.isBlank()) {
+        val trimmed = urlStr.trim()
+        if (trimmed.isBlank()) {
             onComplete(false, "網址不得為空")
+            return
+        }
+        if (trimmed.contains("docs.google.com/spreadsheets")) {
+            onComplete(false, "⚠️ 您輸入的是 Google 試算表頁面網址，請依照教學貼上 Apps Script 部署後的「網頁應用程式網址 (Web App URL)」(結尾應為 /exec)！")
+            return
+        }
+        if (trimmed.endsWith("/edit") || trimmed.contains("script.google.com/home/projects")) {
+            onComplete(false, "⚠️ 您輸入的是 Apps Script 編輯器網址，請點選右上角「部署」>「新增部署作業」複製網頁應用程式網址！")
+            return
+        }
+        if (trimmed.endsWith("/dev")) {
+            onComplete(false, "⚠️ 您輸入的是測試開發網址 (/dev)，此網址要求登入 Google 帳號。請在部署時建立正式網頁應用程式，取得 /exec 結尾的網址！")
+            return
+        }
+        if (!trimmed.startsWith("https://")) {
+            onComplete(false, "網址格式不正確，必須以 https:// 開頭")
             return
         }
 
@@ -107,7 +124,7 @@ object GoogleSheetsSyncManager {
             try {
                 val testJson = JSONObject().apply {
                     put("timestamp", "測試連線")
-                    put("userName", "連線測試")
+                    put("userName", "小鹿連線測試")
                     put("gender", "-")
                     put("solarBirthDate", "-")
                     put("birthTime", "-")
@@ -117,12 +134,12 @@ object GoogleSheetsSyncManager {
                     put("elementBureau", "-")
                     put("lifeMaster", "-")
                     put("bodyMaster", "-")
-                    put("platform", "測試訊號")
+                    put("platform", "Android 測試訊號")
                 }
-                val (success, msg) = sendPostRequest(urlStr, testJson.toString())
+                val (success, msg) = sendPostRequest(trimmed, testJson.toString())
                 withContext(Dispatchers.Main) {
                     if (success) {
-                        onComplete(true, "連線成功！已傳送一筆測試資料至 Google Sheet。")
+                        onComplete(true, "✅ 連線成功！已傳送一筆測試資料至 Google Sheet，請查看試算表是否出現「小鹿連線測試」一列。")
                     } else {
                         onComplete(false, msg ?: "連線失敗，請檢查網址或權限設定。")
                     }
@@ -156,10 +173,18 @@ object GoogleSheetsSyncManager {
             }
 
             val responseCode = connection.responseCode
-            if (responseCode in 200..399) {
+            val stream = if (responseCode in 200..399) connection.inputStream else connection.errorStream
+            val responseBody = stream?.bufferedReader()?.use { it.readText() } ?: ""
+
+            if (responseBody.contains("accounts.google.com") || responseBody.contains("ServiceLogin")) {
+                Pair(false, "❌ 權限設定錯誤：Apps Script 部署時「誰可以存取 (Who has access)」未設為「所有人 (Anyone)」，請至 Apps Script 重新部署！")
+            } else if (responseBody.contains("\"status\":\"error\"")) {
+                val errJson = try { JSONObject(responseBody).optString("message") } catch (e: Exception) { responseBody }
+                Pair(false, "❌ 試算表寫入失敗: $errJson")
+            } else if (responseCode in 200..399) {
                 Pair(true, null)
             } else {
-                Pair(false, "伺服器回應碼: $responseCode")
+                Pair(false, "❌ 伺服器回應碼: $responseCode")
             }
         } catch (e: Exception) {
             Pair(false, e.message)
