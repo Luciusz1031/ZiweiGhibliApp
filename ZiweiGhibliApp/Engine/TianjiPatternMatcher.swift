@@ -61,7 +61,6 @@ public class TianjiPatternMatcher {
         }
         
         // 4. 月朗天門格
-        let haiPalace = palaces[EarthlyBranch.hai.rawValue]
         if lifeBranch == .hai && lifeStarNames.contains("太陰") {
             matched.append(TianjiPattern(
                 name: "月朗天門格",

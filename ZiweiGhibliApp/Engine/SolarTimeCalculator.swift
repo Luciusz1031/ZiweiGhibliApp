@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SolarCorrectionResult {
+public struct SolarCorrectionResult: Codable {
     public let originalDate: Date
     public let trueSolarDate: Date
     public let longitudeOffsetMinutes: Double
@@ -71,7 +71,7 @@ public class SolarTimeCalculator {
         
         // 4. 解析真太陽時對應的時辰地支
         let hour = calendar.component(.hour, from: trueSolarDate)
-        let minute = calendar.component(.minute, from: trueSolarDate)
+        let _ = calendar.component(.minute, from: trueSolarDate)
         
         var isLateZi = false
         var isEarlyZi = false

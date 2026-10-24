@@ -227,7 +227,7 @@ public class PDFReportGenerator {
         let auxText = auxList.joined(separator: " ")
         if !auxText.isEmpty {
             let auxAttrs: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(size: 7),
+                .font: UIFont.systemFont(ofSize: 7),
                 .foregroundColor: UIColor(red: 0.35, green: 0.45, blue: 0.35, alpha: 1.0)
             ]
             auxText.draw(at: CGPoint(x: x, y: rect.maxY - 19), withAttributes: auxAttrs)
@@ -236,7 +236,7 @@ public class PDFReportGenerator {
         // 4. 天干地支
         let stemBranch = "\(palace.heavenlyStem.name)\(palace.earthlyBranch.name)"
         let sbAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(size: 7.5),
+            .font: UIFont.systemFont(ofSize: 7.5),
             .foregroundColor: UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1.0)
         ]
         let sbSize = stemBranch.size(withAttributes: sbAttrs)
@@ -304,7 +304,7 @@ public class PDFReportGenerator {
         if chart.patterns.isEmpty {
             let note = "本命格局平正溫和，無極端偏煞，行運以穩健中求進展為上。"
             note.draw(in: CGRect(x: margin, y: currentY, width: contentWidth, height: 40), withAttributes: [
-                .font: UIFont.systemFont(size: 11),
+                .font: UIFont.systemFont(ofSize: 11),
                 .foregroundColor: UIColor(red: 0.204, green: 0.322, blue: 0.247, alpha: 1.0)
             ])
             currentY += 40
@@ -333,7 +333,7 @@ public class PDFReportGenerator {
                 cardY += 18
                 
                 pattern.description.draw(in: CGRect(x: cardX, y: cardY, width: textW, height: 28), withAttributes: [
-                    .font: UIFont.systemFont(size: 9.5),
+                    .font: UIFont.systemFont(ofSize: 9.5),
                     .foregroundColor: UIColor(red: 0.25, green: 0.35, blue: 0.25, alpha: 1.0)
                 ])
                 cardY += 28

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct LunarDateInfo {
+public struct LunarDateInfo: Codable {
     public let lunarYear: Int
     public let lunarMonth: Int
     public let lunarDay: Int
