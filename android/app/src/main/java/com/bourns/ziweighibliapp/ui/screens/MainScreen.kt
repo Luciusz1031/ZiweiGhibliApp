@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -23,9 +24,10 @@ import com.bourns.ziweighibliapp.ui.theme.ParchmentCard
 import java.util.Date
 
 enum class MainTab(val title: String) {
-    METIS("現代白話"),
+    METIS("命盤分析"),
+    GRID("星盤總覽"),
     VERTICAL_PALACES("直列宮位"),
-    SYNASTRY("雙人合盤")
+    SYNASTRY("合盤分析")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +73,18 @@ fun MainScreen() {
                         selected = (selectedTab == MainTab.METIS),
                         onClick = { selectedTab = MainTab.METIS },
                         icon = { Icon(Icons.Default.AutoAwesome, contentDescription = null) },
-                        label = { Text("現代白話") },
+                        label = { Text("命盤分析") },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = ForestMoss,
+                            selectedTextColor = ForestMoss,
+                            indicatorColor = ForestMoss.copy(alpha = 0.15f)
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = (selectedTab == MainTab.GRID),
+                        onClick = { selectedTab = MainTab.GRID },
+                        icon = { Icon(Icons.Default.GridOn, contentDescription = null) },
+                        label = { Text("星盤總覽") },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = ForestMoss,
                             selectedTextColor = ForestMoss,
@@ -93,7 +106,7 @@ fun MainScreen() {
                         selected = (selectedTab == MainTab.SYNASTRY),
                         onClick = { selectedTab = MainTab.SYNASTRY },
                         icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
-                        label = { Text("雙人合盤") },
+                        label = { Text("合盤分析") },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = ForestMoss,
                             selectedTextColor = ForestMoss,
@@ -111,6 +124,7 @@ fun MainScreen() {
             ) {
                 when (selectedTab) {
                     MainTab.METIS -> MetisAnalysisScreen(chart!!)
+                    MainTab.GRID -> ChartGridScreen(chart!!)
                     MainTab.VERTICAL_PALACES -> VerticalPalaceListScreen(chart!!)
                     MainTab.SYNASTRY -> SynastryScreen(chart!!)
                 }

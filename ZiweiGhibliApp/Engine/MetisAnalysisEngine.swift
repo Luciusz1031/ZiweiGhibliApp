@@ -19,6 +19,24 @@ public struct DimensionalScores: Codable {
     }
 }
 
+// MARK: - 維度深度解析模型 (子頁面詳細資料)
+public struct MetisDimensionDetail: Identifiable, Codable {
+    public var id: String { dimensionName }
+    public let dimensionName: String
+    public let iconName: String
+    public let score: Int
+    public let ratingText: String
+    public let palaceName: String
+    public let palaceBranchName: String
+    public let majorStarsDisplay: String
+    public let transformations: [String]
+    public let coreEssence: String
+    public let advantages: [String]
+    public let blindSpots: [String]
+    public let actionStrategies: [String]
+    public let luckyFawnTips: String
+}
+
 // MARK: - 命盤維度分析模型
 public struct MetisAnalysisReport: Codable {
     public let headline: String               // 霸氣震撼命格主標題 (如「敢推倒重來，敢走在前頭」)
@@ -37,6 +55,9 @@ public struct MetisAnalysisReport: Codable {
     
     // 各維度切換解讀
     public let dimensionReadings: [String: String]
+    
+    // 各維度完整子頁面深度細節模型
+    public let dimensionDetails: [String: MetisDimensionDetail]
 }
 
 public class MetisAnalysisEngine {
@@ -86,6 +107,17 @@ public class MetisAnalysisEngine {
         dimensionReadings["婚戀"] = "情感專一而執著，在相處上講究真誠與默契。適當的讚美與傾聽，是昇華彼此關係的最強開運法寶。"
         dimensionReadings["父母長輩"] = "與長輩相處宜以敬重為先。父母的教誨是你成長過程中重要的基石，多花時間陪伴能收穫心靈的平靜與福氣。"
         
+        // 6. 生成各維度深度子頁面細節模型
+        let dimensionDetails = generateAllDimensionDetails(
+            chart: chart,
+            scores: scores,
+            life: lifePalace,
+            career: careerPalace,
+            wealth: wealthPalace,
+            marriage: marriagePalace,
+            health: healthPalace
+        )
+        
         return MetisAnalysisReport(
             headline: headline,
             subHeadline: subHeadline,
@@ -96,7 +128,8 @@ public class MetisAnalysisEngine {
             detailedOverview: detailedOverview,
             actionableAdvice: actionableAdvice,
             oneSentenceVerdict: oneSentenceVerdict,
-            dimensionReadings: dimensionReadings
+            dimensionReadings: dimensionReadings,
+            dimensionDetails: dimensionDetails
         )
     }
     
@@ -218,5 +251,250 @@ public class MetisAnalysisEngine {
     
     private static func generateOneSentenceVerdict(majorNames: [String]) -> String {
         return "「知世故而不世故，歷千帆仍持初心；敢於破局重來者，終將自成天地。」"
+    }
+    
+    // MARK: - 生成全維度詳細資料
+    private static func generateAllDimensionDetails(
+        chart: AstrolabeChart,
+        scores: DimensionalScores,
+        life: PalaceData,
+        career: PalaceData,
+        wealth: PalaceData,
+        marriage: PalaceData,
+        health: PalaceData
+    ) -> [String: MetisDimensionDetail] {
+        var dict: [String: MetisDimensionDetail] = [:]
+        
+        let friendsPalace = chart.palaces.first { $0.type == .friends } ?? life
+        let propertyPalace = chart.palaces.first { $0.type == .property } ?? life
+        let parentsPalace = chart.palaces.first { $0.type == .parents } ?? life
+        
+        func formatStars(_ p: PalaceData) -> String {
+            let list = p.majorStars.map { "\($0.name)\($0.brightness != nil ? "[\($0.brightness!.rawValue)]" : "")" }
+            return list.isEmpty ? "借對宮吉星拱照" : list.joined(separator: "、")
+        }
+        
+        func formatTransformations(_ p: PalaceData) -> [String] {
+            return p.stars.compactMap {
+                if let tf = $0.natalTransformation {
+                    return "\($0.name)化\(tf.rawValue)"
+                }
+                return nil
+            }
+        }
+        
+        // 1. 財富
+        dict["財富"] = MetisDimensionDetail(
+            dimensionName: "財富",
+            iconName: "dollarsign.circle.fill",
+            score: Int(scores.wealth),
+            ratingText: scores.wealth >= 85 ? "財源亨通・多元吸金體質" : "穩健蓄財・技術致富格局",
+            palaceName: "財帛宮",
+            palaceBranchName: "\(wealth.earthlyBranch.name)宮",
+            majorStarsDisplay: formatStars(wealth),
+            transformations: formatTransformations(wealth),
+            coreEssence: "以 \(formatStars(wealth)) 為求財根基。你的賺錢邏輯不靠道聽途說的盲目投機，而是靠個人無可替代的專業技術、獨特商業嗅覺與穩步累積，方能水到渠成。",
+            advantages: [
+                "具備極佳的價值嗅覺，擅長將專業知識或技能轉化為穩定現金流。",
+                "抗風險能力佳，在大環境動盪時懂得提前守住流動性資金。",
+                "正財根基紮實，中年後複利累積效應越發顯著。"
+            ],
+            blindSpots: [
+                "人情開銷或因抹不開面子而幫他人代墊墊款，易產生隱形損失。",
+                "切忌高槓桿投機短炒，穩紮穩打才是守成良方。"
+            ],
+            actionStrategies: [
+                "將每月結餘固定分配至不動產或指數型穩健資產中，遠離高風險誘惑。",
+                "深耕本業關鍵壁壘，持續提升個人單位時間價值。"
+            ],
+            luckyFawnTips: "小鹿兒招財錦囊：在皮夾常備一張嶄新開運金鈔，日常多穿搭深綠、駝色系衣飾，財氣最聚！"
+        )
+        
+        // 2. 事業
+        dict["事業"] = MetisDimensionDetail(
+            dimensionName: "事業",
+            iconName: "briefcase.fill",
+            score: Int(scores.career),
+            ratingText: scores.career >= 85 ? "大將之風・開疆拓土先鋒" : "中流砥柱・核心骨幹骨相",
+            palaceName: "官祿宮",
+            palaceBranchName: "\(career.earthlyBranch.name)宮",
+            majorStarsDisplay: formatStars(career),
+            transformations: formatTransformations(career),
+            coreEssence: "官祿宮坐鎮 \(formatStars(career))，職場自帶擔當與執行力。適合在需要獨立決策、戰略規劃或核心技術的舞台發揮長才，越早獨當一面越容易成器。",
+            advantages: [
+                "遇突發難題沉著果斷，能在混亂中理出清晰執行線路。",
+                "對效率與成果高度負責，極容易獲得高層與合作夥伴信賴。",
+                "勇於革新與優化流程，是推動組織向前變革的靈魂人物。"
+            ],
+            blindSpots: [
+                "過於求好心切時容易事必躬親，導致自身精疲力竭。",
+                "對下屬或隊友期望過高，需多留給他人犯錯成長的空間。"
+            ],
+            actionStrategies: [
+                "學會授權分工，將精力聚焦於最高價值的戰略方向與人脈樞紐。",
+                "定期梳理個人職場作品集與里程碑，建立個人品牌聲量。"
+            ],
+            luckyFawnTips: "小鹿兒事業錦囊：辦公桌左手邊擺放一盆生機盎然的常青綠植，能為你帶來貴人助力與清晰思路！"
+        )
+        
+        // 3. 感情
+        dict["感情"] = MetisDimensionDetail(
+            dimensionName: "感情",
+            iconName: "heart.fill",
+            score: Int(scores.relationship),
+            ratingText: scores.relationship >= 85 ? "情深意篤・心靈共鳴伴侶" : "相互扶持・並肩作戰良緣",
+            palaceName: "夫妻宮",
+            palaceBranchName: "\(marriage.earthlyBranch.name)宮",
+            majorStarsDisplay: formatStars(marriage),
+            transformations: formatTransformations(marriage),
+            coreEssence: "夫妻宮由 \(formatStars(marriage)) 守護。你在親密關係中重視的是精神層面的深度對話與三觀契合，比起海誓山盟，你更珍惜患難與共、平淡真實的默契溫暖。",
+            advantages: [
+                "對感情專一真誠，一旦認定對方願意傾力守護與付出。",
+                "擅長在日常細節中照顧伴侶感受，給予實質安全感。",
+                "遇分歧時願以家庭大局為重，具備成熟的包容度。"
+            ],
+            blindSpots: [
+                "有時習慣將煩惱悶在心裡自己扛，容易讓伴侶感到疏離。",
+                "說話過於耿直講理，感情相處更需要柔軟共情與溫暖擁抱。"
+            ],
+            actionStrategies: [
+                "每週安排專屬約會夜，放下手機，純粹分享生活趣事與心情。",
+                "多用正面肯定句代替批評建議，讚美能化解一切冰霜。"
+            ],
+            luckyFawnTips: "小鹿兒姻緣錦囊：臥室擺放柔和暖色系床頭夜燈，多噴點溫馨木質調香氛，良緣自然甜甜蜜蜜！"
+        )
+        
+        // 4. 性格
+        dict["性格"] = MetisDimensionDetail(
+            dimensionName: "性格",
+            iconName: "person.crop.circle.fill",
+            score: Int(scores.personality),
+            ratingText: "自尊獨立・內蘊剛毅之質",
+            palaceName: "命宮 (本命元辰)",
+            palaceBranchName: "\(life.earthlyBranch.name)宮",
+            majorStarsDisplay: formatStars(life),
+            transformations: formatTransformations(life),
+            coreEssence: "以 \(formatStars(life)) 為人格內核。你天生具有鮮明的主見與抗壓韌性，外表或許溫文儒雅，但內心自有一套不可動搖的原則與價值尺度。",
+            advantages: [
+                "挫敗復原力極強，在逆境中往往能激發出超乎常人的爆發力。",
+                "知世故而不世故，珍惜真誠朋友，不屑於虛偽迎合。",
+                "自省能力高，能不斷在實踐中進化升級思維格局。"
+            ],
+            blindSpots: [
+                "容易因自我要求過高而陷入精神內耗，需學會放過自己。",
+                "防備心較重，初期不容易輕易向他人打開心扉。"
+            ],
+            actionStrategies: [
+                "每天留給自己 15 分鐘放空靜心，與內在的小孩好好對話。",
+                "接受不完美是人生的常態，七分奮鬥、三分隨緣最自在。"
+            ],
+            luckyFawnTips: "小鹿兒開運錦囊：晨起喝一杯溫開水，面向陽光深呼吸三次，喚醒元辰神清氣爽！"
+        )
+        
+        // 5. 健康
+        dict["健康"] = MetisDimensionDetail(
+            dimensionName: "健康",
+            iconName: "cross.fill",
+            score: Int(scores.health),
+            ratingText: scores.health >= 85 ? "元氣充沛・筋骨強健之態" : "調和陰陽・養生蓄力時期",
+            palaceName: "疾厄宮",
+            palaceBranchName: "\(health.earthlyBranch.name)宮",
+            majorStarsDisplay: formatStars(health),
+            transformations: formatTransformations(health),
+            coreEssence: "疾厄宮坐鎮 \(formatStars(health))。平日精力充沛，但需預防過度透支身體。你的健康關鍵在於情緒壓力疏導與順應四季的作息節律。",
+            advantages: [
+                "身體自我修復力佳，平時注意養生便能長久維持健康狀態。",
+                "對身體信號相對敏感，能及時察覺不適並調整生活節奏。"
+            ],
+            blindSpots: [
+                "工作投入時易忘記喝水與走動，久坐易引發肩頸腰背緊繃。",
+                "晚餐時間若不規律，容易對消化系統產生額外負擔。"
+            ],
+            actionStrategies: [
+                "培養每週 2-3 次流汗運動（如慢跑、游泳、健走），促進代謝。",
+                "睡前 30 分鐘關閉 3C 藍光螢幕，聽輕柔白噪音有助深度睡眠。"
+            ],
+            luckyFawnTips: "小鹿兒養生錦囊：隨身攜帶溫水保溫杯，多喝溫潤花草茶，脾胃溫暖人就長壽！"
+        )
+        
+        // 6. 人際貴人
+        dict["人際貴人"] = MetisDimensionDetail(
+            dimensionName: "人際貴人",
+            iconName: "person.3.fill",
+            score: 88,
+            ratingText: "高朋滿座・長輩同儕照應",
+            palaceName: "交友宮 / 遷移宮",
+            palaceBranchName: "\(friendsPalace.earthlyBranch.name)宮",
+            majorStarsDisplay: formatStars(friendsPalace),
+            transformations: formatTransformations(friendsPalace),
+            coreEssence: "交友宮呈現 \(formatStars(friendsPalace)) 之相。你的貴人運多出自專業圈層與遠行機遇，以誠待人、言出必行是吸引大咖前輩提攜的致勝法寶。",
+            advantages: [
+                "自帶親和力與可信度，容易在重要場合結交優質人脈。",
+                "為人仗義知恩圖報，身邊總有願意鼎力相助的鐵桿摯友。"
+            ],
+            blindSpots: [
+                "對朋友防備心低，需防範酒肉朋友或居心叵測者的言語誘惑。"
+            ],
+            actionStrategies: [
+                "定期篩選人脈圈，多花時間深耕 5-10 位同頻共振的良師益友。",
+                "主動為他人創造價值，善緣如同回力鏢必將豐厚回饋自身。"
+            ],
+            luckyFawnTips: "小鹿兒人緣錦囊：常懷感恩心，逢年過節主動向長輩前輩發送真誠祝福，貴人運長存！"
+        )
+        
+        // 7. 田宅
+        dict["田宅"] = MetisDimensionDetail(
+            dimensionName: "田宅",
+            iconName: "house.fill",
+            score: 89,
+            ratingText: "基業安穩・福宅庇蔭後代",
+            palaceName: "田宅宮",
+            palaceBranchName: "\(propertyPalace.earthlyBranch.name)宮",
+            majorStarsDisplay: formatStars(propertyPalace),
+            transformations: formatTransformations(propertyPalace),
+            coreEssence: "田宅宮代表家庭安全感、不動產資產與祖業福蔭。宮內星曜和順，一生中極有機會擁有舒適溫馨、地段優越的理想居所。",
+            advantages: [
+                "對房屋地段與居家舒適度有極佳品味，置產眼光精準。",
+                "居家環境常能為你提供滿滿的充電能量與心靈安定感。"
+            ],
+            blindSpots: [
+                "裝潢修繕時易因追求完美而超支預算，需提前做好規劃。"
+            ],
+            actionStrategies: [
+                "資產累積到一定階段，優先配置穩健地段抗通膨的不動產。",
+                "保持家中通風明亮、玄關乾淨無雜物，家肥屋潤氣自華。"
+            ],
+            luckyFawnTips: "小鹿兒家宅錦囊：客廳擺放圓葉植物或天然水晶礦石，全家人和樂融融福運滿堂！"
+        )
+        
+        // 8. 婚戀
+        dict["婚戀"] = dict["感情"]!
+        
+        // 9. 父母長輩
+        dict["父母長輩"] = MetisDimensionDetail(
+            dimensionName: "父母長輩",
+            iconName: "hands.sparkles.fill",
+            score: 86,
+            ratingText: "承蒙庇蔭・孝悌福祿隨身",
+            palaceName: "父母宮",
+            palaceBranchName: "\(parentsPalace.earthlyBranch.name)宮",
+            majorStarsDisplay: formatStars(parentsPalace),
+            transformations: formatTransformations(parentsPalace),
+            coreEssence: "父母宮坐鎮 \(formatStars(parentsPalace))。長輩的家訓與言傳身教是你人生道路上的重要指路明燈，孝順父母乃世間第一大福田。",
+            advantages: [
+                "自幼承蒙父母長輩關照，家庭觀念深厚而有溫度。",
+                "在職場中容易得到年長主管或資深導師的特別青睞。"
+            ],
+            blindSpots: [
+                "偶有兩代觀念代溝，切勿因性急而口出重言傷害長輩。"
+            ],
+            actionStrategies: [
+                "定期致電關心父母生活細節，陪伴是最好的孝順方式。",
+                "虛心請教長輩人生閱歷，他們的智慧能幫你避開許多暗坑。"
+            ],
+            luckyFawnTips: "小鹿兒福報錦囊：多給父母長輩添置保暖舒適衣物，百善孝為先，天地自護持！"
+        )
+        
+        return dict
     }
 }

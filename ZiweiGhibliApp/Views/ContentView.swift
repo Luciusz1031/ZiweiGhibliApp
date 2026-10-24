@@ -152,25 +152,12 @@ public struct ContentView: View {
                         SynastryView(personA: activeChart)
                         
                     case .grid:
-                        // 3. 傳統 4x4 天圓地方星盤總覽 (中宮 METIS 天心儀表 + 時光輪盤)
-                        VStack(spacing: 4) {
-                            MetisChartGridView(
-                                chart: activeChart,
-                                selectedBranch: $selectedBranch
-                            )
-                            .padding(.horizontal, 6)
-                            
-                            Spacer(minLength: 2)
-                            
-                            TimeSliderView(
-                                currentMode: $luckMode,
-                                selectedDecadeIndex: $selectedDecadeIndex,
-                                selectedYear: $selectedYear,
-                                chart: activeChart
-                            )
-                            .padding(.horizontal, 8)
-                            .padding(.bottom, 6)
-                        }
+                        // 3. 4x4 天圓地方星盤總覽 (包含本命/大限/流年/小限/流月/流日 白話深度運勢解析)
+                        MetisChartGridView(
+                            chart: activeChart,
+                            selectedBranch: $selectedBranch
+                        )
+                        .padding(.horizontal, 4)
                         
                     case .vertical:
                         // 4. 直列滑動卷軸 (單手流暢滑動、直覺清晰)
