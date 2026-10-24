@@ -11,9 +11,9 @@ public class PDFReportGenerator {
     /// 將命盤生成 PDF 文件並存於暫存區，回傳檔案 URL
     public static func generatePDF(for chart: AstrolabeChart) -> URL? {
         let pdfMetaData = [
-            kCGPDFContextCreator: "星之迴響紫微斗數 App",
-            kCGPDFContextAuthor: "倪海廈《天紀》排盤系統",
-            kCGPDFContextTitle: "\(chart.lunarInfo.yearStem.name)\(chart.lunarInfo.yearBranch.name)年・紫微斗數命盤報告"
+            kCGPDFContextCreator: "小鹿兒算命 App",
+            kCGPDFContextAuthor: "小鹿兒 × 倪海廈《天紀》排盤系統",
+            kCGPDFContextTitle: "小鹿兒算命・\(chart.lunarInfo.yearStem.name)\(chart.lunarInfo.yearBranch.name)年紫微斗數報告"
         ]
         let format = UIGraphicsPDFRendererFormat()
         format.documentInfo = pdfMetaData as [String: Any]
@@ -21,7 +21,7 @@ public class PDFReportGenerator {
         let pageRect = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect, format: format)
         
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("天紀紫微斗數命盤_\(chart.lunarInfo.yearStem.name)\(chart.lunarInfo.yearBranch.name)年.pdf")
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("小鹿兒算命_\(chart.lunarInfo.yearStem.name)\(chart.lunarInfo.yearBranch.name)年命盤.pdf")
         
         do {
             try renderer.writePDF(to: tempURL) { context in
@@ -60,7 +60,7 @@ public class PDFReportGenerator {
         var currentY: CGFloat = 36.0
         
         // 1. 標題
-        let title = "星 之 迴 響・天 紀 紫 微 斗 數 命 盤"
+        let title = "小 鹿 兒 算 命・紫 微 斗 數 命 盤"
         let titleAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont(name: "PingFangTC-Semibold", size: 18) ?? UIFont.boldSystemFont(ofSize: 18),
             .foregroundColor: UIColor(red: 0.204, green: 0.322, blue: 0.247, alpha: 1.0)
@@ -70,7 +70,7 @@ public class PDFReportGenerator {
         currentY += titleSize.height + 6
         
         // 副標題
-        let subTitle = "倪海廈先生《天紀》排盤體系・真太陽時精密校準"
+        let subTitle = "吉卜力溫馨手繪 × 倪海廈先生《天紀》排盤體系・真太陽時精密校準"
         let subAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont(name: "PingFangTC-Regular", size: 10) ?? UIFont.systemFont(ofSize: 10),
             .foregroundColor: UIColor(red: 0.769, green: 0.608, blue: 0.235, alpha: 1.0)
@@ -153,7 +153,7 @@ public class PDFReportGenerator {
         drawPDFCenterPalace(chart: chart, in: centerRect, context: context)
         
         // 4. 底部頁腳
-        let footerText = "星之迴響紫微斗數 App 自動產生・心態改則命運改・專屬個人命理報告"
+        let footerText = "小鹿兒算命 App 自動產生・心態改則命運改・專屬個人命理報告"
         let footerAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont(name: "PingFangTC-Regular", size: 8) ?? UIFont.systemFont(ofSize: 8),
             .foregroundColor: UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1.0)

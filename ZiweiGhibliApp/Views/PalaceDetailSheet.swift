@@ -47,7 +47,52 @@ public struct PalaceDetailSheet: View {
                         .padding()
                         .parchmentStyle(isHighlighted: true)
                         
-                        // 2. 星曜陣容解析
+                        // 2. 小鹿兒白話解說專區
+                        let interp = PlainLanguageInterpreter.interpret(palace: palace, chart: chart)
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                CuteDeerMascotView(size: 36)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("小鹿兒白話生活解讀")
+                                        .font(GhibliTheme.titleFont(size: 16))
+                                        .foregroundColor(GhibliTheme.forestMoss)
+                                    Text(interp.lifeTheme)
+                                        .font(GhibliTheme.noteFont(size: 11))
+                                        .foregroundColor(GhibliTheme.magicBrass)
+                                }
+                            }
+                            
+                            Text(interp.summary)
+                                .font(GhibliTheme.bodyFont(size: 13))
+                                .foregroundColor(GhibliTheme.forestMoss)
+                                .padding(8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.white.opacity(0.6))
+                                .cornerRadius(8)
+                            
+                            ForEach(interp.starHighlights, id: \.self) { h in
+                                Text(h)
+                                    .font(GhibliTheme.bodyFont(size: 12))
+                                    .foregroundColor(GhibliTheme.forestMoss.opacity(0.85))
+                            }
+                            
+                            if let trans = interp.transformationAdvice {
+                                Text(trans)
+                                    .font(GhibliTheme.bodyFont(size: 12))
+                                    .foregroundColor(GhibliTheme.calciferOrange)
+                            }
+                            
+                            Text(interp.fawnAdvice)
+                                .font(GhibliTheme.bodyFont(size: 12))
+                                .foregroundColor(GhibliTheme.forestMoss)
+                                .padding(10)
+                                .background(GhibliTheme.laputaSky.opacity(0.15))
+                                .cornerRadius(10)
+                        }
+                        .padding()
+                        .parchmentStyle(isHighlighted: true)
+                        
+                        // 3. 星曜陣容解析
                         VStack(alignment: .leading, spacing: 10) {
                             Text("駐留星曜與廟旺神煞")
                                 .font(GhibliTheme.titleFont(size: 16))

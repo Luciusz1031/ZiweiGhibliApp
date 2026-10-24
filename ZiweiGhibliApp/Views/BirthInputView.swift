@@ -29,16 +29,21 @@ public struct BirthInputView: View {
                 
                 ScrollView {
                     VStack(spacing: 16) {
-                        // 標題與簡介
-                        VStack(spacing: 4) {
-                            Text("天 紀 星 宿 儀")
-                                .font(GhibliTheme.titleFont(size: 24))
-                                .foregroundColor(GhibliTheme.forestMoss)
-                                .tracking(3)
+                        // 標題與可愛小鹿吉祥物
+                        VStack(spacing: 10) {
+                            CuteDeerMascotView(size: 72, showGreeting: true, greetingText: "輸入你的生辰，讓小鹿兒為你揭開星星的禮物～")
+                                .padding(.horizontal, 8)
                             
-                            Text("依據倪海廈先生《天紀》紫微斗數體系排盤")
-                                .font(GhibliTheme.bodyFont(size: 13))
-                                .foregroundColor(GhibliTheme.magicBrass)
+                            VStack(spacing: 3) {
+                                Text("小 鹿 兒 算 命")
+                                    .font(GhibliTheme.titleFont(size: 24))
+                                    .foregroundColor(GhibliTheme.forestMoss)
+                                    .tracking(3)
+                                
+                                Text("吉卜力療癒手繪 × 倪海廈《天紀》紫微斗數")
+                                    .font(GhibliTheme.bodyFont(size: 13))
+                                    .foregroundColor(GhibliTheme.magicBrass)
+                            }
                         }
                         .padding(.top, 4)
                         
@@ -152,7 +157,7 @@ public struct BirthInputView: View {
                         Button(action: generateChart) {
                             HStack(spacing: 8) {
                                 Image(systemName: "sparkles")
-                                Text("起 排 天 紀 命 盤")
+                                Text("讓 小 鹿 兒 為 我 排 盤")
                                     .font(GhibliTheme.titleFont(size: 18))
                                     .tracking(2)
                             }
