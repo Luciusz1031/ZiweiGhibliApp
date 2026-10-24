@@ -85,6 +85,7 @@ public struct BirthInputView: View {
                             
                             TextField("請輸入您的姓名或暱稱（預設：命主）", text: $userName)
                                 .font(GhibliTheme.bodyFont(size: 14))
+                                .foregroundColor(.black)
                                 .padding(10)
                                 .background(GhibliTheme.parchmentCard)
                                 .cornerRadius(8)

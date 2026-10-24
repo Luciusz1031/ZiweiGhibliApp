@@ -301,6 +301,7 @@ public struct SynastryView: View {
             Form {
                 Section(header: Text("對象基本資料")) {
                     TextField("對象姓名 / 稱謂", text: $partnerName)
+                        .foregroundColor(.black)
                     Picker("性別", selection: $partnerGender) {
                         ForEach(Gender.allCases, id: \.self) { g in
                             Text(g.rawValue).tag(g)
