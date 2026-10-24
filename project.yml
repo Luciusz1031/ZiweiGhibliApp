@@ -1,0 +1,27 @@
+name: ZiweiGhibliApp
+options:
+  bundleIdPrefix: com.ghibli.ziwei
+  deploymentTarget:
+    iOS: "16.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    GENERATE_INFOPLIST_FILE: YES
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: "1.0.0"
+    INFOPLIST_KEY_CFBundleDisplayName: "天紀星宿"
+    INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait"
+
+targets:
+  ZiweiGhibliApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: ZiweiGhibliApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ghibli.ziwei.astrolabe
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        CODE_SIGN_STYLE: Automatic

@@ -1,0 +1,49 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch: # 支援在 GitHub 網頁上手動一鍵點擊執行
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-ipa:
+    runs-on: macos-14 # 使用 GitHub 官方免費的 Apple Silicon (M1/M2) macOS 伺服器
+    
+    steps:
+      - name: 檢出專案代碼 (Checkout)
+        uses: actions/checkout@v4
+
+      - name: 安裝 XcodeGen
+        run: |
+          brew install xcodegen
+
+      - name: 生成 Xcode 專案檔 (Generate Xcode Project)
+        run: |
+          xcodegen generate
+
+      - name: 編譯 iOS Release .app 套件
+        run: |
+          xcodebuild -project ZiweiGhibliApp.xcodeproj \
+                     -scheme ZiweiGhibliApp \
+                     -configuration Release \
+                     -sdk iphoneos \
+                     -derivedDataPath ./build \
+                     CODE_SIGNING_ALLOWED=NO \
+                     CODE_SIGNING_REQUIRED=NO \
+                     CODE_SIGN_IDENTITY="" \
+                     clean build
+
+      - name: 打包成 .ipa 檔案 (Package to IPA)
+        run: |
+          mkdir -p Payload
+          cp -r ./build/Build/Products/Release-iphoneos/ZiweiGhibliApp.app Payload/
+          zip -r -q ZiweiGhibliApp.ipa Payload
+          echo "✅ IPA 打包成功！大小："
+          ls -lh ZiweiGhibliApp.ipa
+
+      - name: 上傳 IPA 供使用者下載 (Upload Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZiweiGhibliApp-IPA
+          path: ZiweiGhibliApp.ipa
+          retention-days: 14
