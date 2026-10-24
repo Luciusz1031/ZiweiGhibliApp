@@ -21,23 +21,32 @@ jobs:
         run: |
           xcodegen generate
 
-      - name: 編譯 iOS Release .app 套件
+      - name: 檢查 Xcode 版本與 Scheme
         run: |
-          xcodebuild -project ZiweiGhibliApp.xcodeproj \
-                     -scheme ZiweiGhibliApp \
-                     -configuration Release \
-                     -sdk iphoneos \
-                     -derivedDataPath ./build \
-                     CODE_SIGNING_ALLOWED=NO \
-                     CODE_SIGNING_REQUIRED=NO \
-                     CODE_SIGN_IDENTITY="" \
-                     clean build
+          xcodebuild -version
+          xcodebuild -list -project ZiweiGhibliApp.xcodeproj
+
+      - name: 編譯 iOS Release Archive (Unsigned)
+        run: |
+          xcodebuild archive \
+            -project ZiweiGhibliApp.xcodeproj \
+            -scheme ZiweiGhibliApp \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$PWD/build/ZiweiGhibliApp.xcarchive" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS=""
 
       - name: 打包成 .ipa 檔案 (Package to IPA)
         run: |
-          mkdir -p Payload
-          cp -r ./build/Build/Products/Release-iphoneos/ZiweiGhibliApp.app Payload/
-          zip -r -q ZiweiGhibliApp.ipa Payload
+          mkdir -p build/Payload
+          cp -r build/ZiweiGhibliApp.xcarchive/Products/Applications/ZiweiGhibliApp.app build/Payload/
+          cd build
+          zip -r -q ../ZiweiGhibliApp.ipa Payload
+          cd ..
           echo "✅ IPA 打包成功！大小："
           ls -lh ZiweiGhibliApp.ipa
 

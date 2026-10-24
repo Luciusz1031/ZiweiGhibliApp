@@ -13,6 +13,10 @@ settings:
     INFOPLIST_KEY_CFBundleDisplayName: "天紀星宿"
     INFOPLIST_KEY_UILaunchScreen_Generation: YES
     INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait"
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGN_IDENTITY: ""
 
 targets:
   ZiweiGhibliApp:
@@ -24,4 +28,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ghibli.ziwei.astrolabe
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGN_IDENTITY: ""
