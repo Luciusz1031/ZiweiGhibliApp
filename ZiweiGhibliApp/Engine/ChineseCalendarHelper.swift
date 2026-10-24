@@ -53,7 +53,7 @@ public class ChineseCalendarHelper {
             isLeap = components.isLeapMonth ?? false
         } else {
             components = chineseCalendar.dateComponents([.year, .month, .day], from: targetDate)
-            isLeap = components.isLeapMonth ?? false
+            isLeap = false
         }
         
         let lunarMonth = components.month ?? 1

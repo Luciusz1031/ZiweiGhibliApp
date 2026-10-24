@@ -1,18 +1,29 @@
 import SwiftUI
 
 public enum AstrolabeDisplayMode: String, CaseIterable, Identifiable {
+    case analysis = "命盤分析"
+    case synastry = "合盤分析"
+    case grid = "星盤總覽"
     case vertical = "直列卷軸"
-    case grid = "傳統九宮"
     
     public var id: String { rawValue }
+    
+    public var icon: String {
+        switch self {
+        case .analysis: return "chart.xyaxis.line"
+        case .synastry: return "heart.circle"
+        case .grid: return "square.grid.3x3"
+        case .vertical: return "list.bullet.rectangle.portrait"
+        }
+    }
 }
 
 public struct ContentView: View {
     @State private var chart: AstrolabeChart? = nil
     @State private var schoolConfig: SchoolConfig = .default
     
-    // 命盤顯示模式 (預設為直列滑動卡片模式，方便單手閱讀)
-    @State private var displayMode: AstrolabeDisplayMode = .vertical
+    // 命盤顯示模式 (預設為 Metis 風格的命盤分析，包含六維雷達圖與命格剖析)
+    @State private var displayMode: AstrolabeDisplayMode = .analysis
     
     // 互動狀態
     @State private var selectedBranch: EarthlyBranch? = nil
@@ -36,8 +47,8 @@ public struct ContentView: View {
             
             if let activeChart = chart {
                 // 已排盤視圖
-                VStack(spacing: 4) {
-                    // 頂部導航欄 (小鹿兒標題與模式切換)
+                VStack(spacing: 2) {
+                    // 頂部導航欄 (重設、APP標題、PDF匯出、格局一覽、流派設定)
                     HStack(spacing: 8) {
                         Button(action: {
                             HapticManager.triggerImpact(style: .medium)
@@ -67,31 +78,7 @@ public struct ContentView: View {
                         
                         Spacer()
                         
-                        HStack(spacing: 8) {
-                            // 視圖切換按鈕 (直列滑動 vs 傳統九宮盤)
-                            Button(action: {
-                                HapticManager.triggerImpact(style: .light)
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                    displayMode = (displayMode == .vertical ? .grid : .vertical)
-                                }
-                            }) {
-                                HStack(spacing: 3) {
-                                    Image(systemName: displayMode == .vertical ? "square.grid.3x3" : "list.bullet.rectangle.portrait")
-                                        .font(.system(size: 12))
-                                    Text(displayMode == .vertical ? "九宮格" : "直列")
-                                        .font(GhibliTheme.noteFont(size: 11))
-                                }
-                                .foregroundColor(GhibliTheme.forestMoss)
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 4)
-                                .background(GhibliTheme.parchmentCard)
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(GhibliTheme.borderBrass.opacity(0.6), lineWidth: 1)
-                                )
-                            }
-                            
+                        HStack(spacing: 12) {
                             // PDF 匯出與社群分享按鈕
                             Button(action: exportPDF) {
                                 Image(systemName: "square.and.arrow.up")
@@ -114,25 +101,64 @@ public struct ContentView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 14)
                     .padding(.top, 4)
+                    .padding(.bottom, 2)
+                    
+                    // 頂部四大功能模式切換膠囊列 (模仿 Metis Ziwei 現代風格導航)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(AstrolabeDisplayMode.allCases) { mode in
+                                let isSelected = (displayMode == mode)
+                                Button(action: {
+                                    HapticManager.triggerImpact(style: .light)
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                        displayMode = mode
+                                    }
+                                }) {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: mode.icon)
+                                            .font(.system(size: 11))
+                                        Text(mode.rawValue)
+                                            .font(GhibliTheme.bodyFont(size: 12))
+                                    }
+                                    .foregroundColor(isSelected ? .white : GhibliTheme.forestMoss)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(isSelected ? GhibliTheme.forestMoss : GhibliTheme.parchmentCard)
+                                            .overlay(
+                                                Capsule()
+                                                    .stroke(isSelected ? GhibliTheme.forestMoss : GhibliTheme.borderBrass.opacity(0.4), lineWidth: 1)
+                                            )
+                                    )
+                                    .shadow(color: isSelected ? Color.black.opacity(0.1) : Color.clear, radius: 2, y: 1)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 4)
+                    }
                     
                     // 核心排盤展示區域
-                    if displayMode == .vertical {
-                        // 1. 直列滑動呈現 (預設模式，填滿螢幕空間，單手流暢滑動)
-                        VerticalPalaceListView(chart: activeChart) { palace in
-                            selectedBranch = palace.earthlyBranch
-                        }
-                    } else {
-                        // 2. 傳統 4x4 天圓地方九宮格星盤模式
-                        VStack(spacing: 6) {
-                            ChartGridView(
+                    switch displayMode {
+                    case .analysis:
+                        // 1. 現代 Metis 命格分析 (六維雷達圖、核心優勢卡片、十維度切換)
+                        MetisAnalysisView(chart: activeChart)
+                        
+                    case .synastry:
+                        // 2. 雙人斗數合盤 (相容性指數、四化互旺福澤、磨合建議)
+                        SynastryView(personA: activeChart)
+                        
+                    case .grid:
+                        // 3. 傳統 4x4 天圓地方星盤總覽 (中宮 METIS 天心儀表 + 時光輪盤)
+                        VStack(spacing: 4) {
+                            MetisChartGridView(
                                 chart: activeChart,
-                                selectedBranch: $selectedBranch,
-                                onOpenPatterns: { isShowingPatterns = true },
-                                onOpenSettings: { isShowingSettings = true }
+                                selectedBranch: $selectedBranch
                             )
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, 6)
                             
                             Spacer(minLength: 2)
                             
@@ -144,6 +170,12 @@ public struct ContentView: View {
                             )
                             .padding(.horizontal, 8)
                             .padding(.bottom, 6)
+                        }
+                        
+                    case .vertical:
+                        // 4. 直列滑動卷軸 (單手流暢滑動、直覺清晰)
+                        VerticalPalaceListView(chart: activeChart) { palace in
+                            selectedBranch = palace.earthlyBranch
                         }
                     }
                 }
