@@ -1642,7 +1642,8 @@ ${metis.growthChallenge}
     } catch (e) {}
   }
 
-  function silentSyncChart(chart, solarBirthDate, isUnknownHour) {
+  function silentSyncChart(chart, solarBirthDate, isUnknownHour, customPlatform) {
+    if (!chart || !solarBirthDate) return;
     const now = new Date();
     const pad = n => String(n).padStart(2, '0');
     const timestampStr = `${now.getFullYear()}/${pad(now.getMonth() + 1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
@@ -1656,15 +1657,15 @@ ${metis.growthChallenge}
       solarBirthDate: solarDateStr,
       birthTime: birthTimeStr,
       isUnknownHour: isUnknownHour ? '是 (以子時起盤)' : '否',
-      lunarBirthDate: chart.lunarInfo.lunarDateString,
-      baZi: chart.lunarInfo.baZiString,
-      elementBureau: chart.elementBureau.name,
-      lifeMaster: chart.lifeMaster,
-      bodyMaster: chart.bodyMaster,
-      platform: 'Web (小鹿兒算命)'
+      lunarBirthDate: chart.lunarInfo ? chart.lunarInfo.lunarDateString : '',
+      baZi: chart.lunarInfo ? chart.lunarInfo.baZiString : '',
+      elementBureau: chart.elementBureau ? chart.elementBureau.name : '',
+      lifeMaster: chart.lifeMaster || '',
+      bodyMaster: chart.bodyMaster || '',
+      platform: customPlatform || 'Web (小鹿兒算命)'
     };
 
-    if (!navigator.onLine) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
       const queue = getOfflineQueue();
       queue.push(payload);
       saveOfflineQueue(queue);
@@ -1682,6 +1683,11 @@ ${metis.growthChallenge}
       queue.push(payload);
       saveOfflineQueue(queue);
     });
+  }
+
+  function syncPartnerChart(partnerChart, solarBirthDate, isUnknownHour, mainUserName) {
+    const platformLabel = `Web (小鹿兒合盤・對象資料${mainUserName ? `・配對命主：${mainUserName}` : ''})`;
+    return silentSyncChart(partnerChart, solarBirthDate, isUnknownHour, platformLabel);
   }
 
   function flushOfflineQueue() {
@@ -1726,6 +1732,7 @@ ${metis.growthChallenge}
     analyzeSynastry: analyzeSynastry,
     generateFullReport: generateFullReport,
     silentSyncChart: silentSyncChart,
+    syncPartnerChart: syncPartnerChart,
     flushOfflineQueue: flushOfflineQueue
   };
 

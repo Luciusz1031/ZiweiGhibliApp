@@ -932,7 +932,19 @@
 
       elements.partnerModal.classList.remove('active');
       recalculateChart(false);
-      showToast('💫 雙人合盤磁場已成功重新校驗！');
+
+      // 雙人合盤默契：設定對象資料同步上傳至 Google Sheet 雲端排盤紀錄
+      const [py, pm, pd] = state.partnerUser.birthDateStr.split('-').map(Number);
+      const [ph, pmin] = (state.partnerUser.birthTimeStr || '00:00').split(':').map(Number);
+      const pDate = new Date(py, pm - 1, pd, ph || 0, pmin || 0);
+      ZiweiEngine.syncPartnerChart(
+        state.partnerChart,
+        pDate,
+        state.partnerUser.isUnknownHour,
+        state.chart ? state.chart.userName : '命主'
+      );
+
+      showToast('💫 雙人合盤對象已成功更新並同步至雲端紀錄！');
     });
 
     // 宮位詳情關閉
