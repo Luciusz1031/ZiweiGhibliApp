@@ -5,7 +5,6 @@
 - **介面風格**：融合**宮崎駿 / 吉卜力手繪美學**與超可愛「小鹿兒」吉祥物與煤炭星塵精靈。
 - **呈現形式**：**預設採用直列滑動卡片模式**（單手舒適閱讀，告別畫面留白），並支援隨時切換至**現代白話**與**雙人合盤**。
 - **解盤風格**：**保留最嚴謹的倪海廈《天紀》命理體系與原文古籍**，同時提供**超白話、溫馨、貼近生活的性格超能力、事業財運指引與小鹿兒開運建議**！
-- **雙平台雲端自動打包**：每次 GitHub 推送均會同時編譯產出 **iOS IPA** 與 **Android APK**。
 
 ---
 
@@ -25,19 +24,3 @@
    - 包含生年四化（日武陰同）、子初換日、十四主星、六吉六煞與經典格局庫。
 
 ---
-
-## 🚀 如何下載安裝至手機
-
-每次更新推送代碼至 GitHub 時，GitHub Actions 都會**同時自動編譯** iOS 與 Android 雙版本：
-
-### 🍏 iPhone (iOS)
-1. 前往 GitHub 倉庫的 **Actions** 頁面。
-2. 點選最新一次的 **Build iOS IPA** 運行。
-3. 在頁面底部的 **Artifacts** 下載 **`ZiweiGhibliApp-IPA`**。
-4. 使用 Sideloadly、AltStore 或 TrollStore 即可安裝至 iPhone。
-
-### 🤖 Android 手機 (APK)
-1. 前往 GitHub 倉庫的 **Actions** 頁面。
-2. 點選最新一次的 **Build Android APK** 運行。
-3. 在頁面底部的 **Artifacts** 下載 **`XiaoLuerZiwei-APK`**。
-4. 解壓縮後的 **`XiaoLuerZiwei.apk`** 直接用 Android 手機點擊即可一鍵安裝（免電腦、免證書，永久可用）！
