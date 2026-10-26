@@ -132,11 +132,9 @@
   function getLunarDateInfo(date, hourBranchIndex, isLateZi) {
     let targetDate = new Date(date.getTime());
     if (isLateZi) {
-      // 倪海廈天紀「子初換日」：夜子時日柱計入次日
       targetDate = new Date(targetDate.getTime() + 3600 * 1000);
     }
 
-    // 利用原生現代 Intl.DateTimeFormat('zh-TW-u-ca-chinese') 精準取得農曆年月日時
     const fmt = new Intl.DateTimeFormat('zh-TW-u-ca-chinese', { dateStyle: 'full' });
     const parts = fmt.formatToParts(targetDate);
     
@@ -150,13 +148,11 @@
       if (p.type === 'day') dayStr = p.value;
     }
 
-    // 解析農曆月數
     const monthMap = { '正月': 1, '二月': 2, '三月': 3, '四月': 4, '五月': 5, '六月': 6, '七月': 7, '八月': 8, '九月': 9, '十月': 10, '十一月': 11, '冬月': 11, '十二月': 12, '臘月': 12 };
     let isLeap = monthStr.includes('閏');
     let cleanMonth = monthStr.replace('閏', '');
     let lunarMonth = monthMap[cleanMonth] || parseInt(cleanMonth) || 1;
 
-    // 解析農曆日數
     const dayMap = {
       '初一': 1, '初二': 2, '初三': 3, '初四': 4, '初五': 5, '初六': 6, '初七': 7, '初八': 8, '初九': 9, '初十': 10,
       '十一': 11, '十二': 12, '十三': 13, '十四': 14, '十五': 15, '十六': 16, '十七': 17, '十八': 18, '十九': 19, '二十': 20,
@@ -164,7 +160,6 @@
     };
     let lunarDay = dayMap[dayStr] || parseInt(dayStr) || 1;
 
-    // 年干支 (西元4年為甲子年)
     const gregYear = targetDate.getFullYear();
     const gregMonth = targetDate.getMonth() + 1;
     let actualYear = gregYear;
@@ -174,15 +169,12 @@
     const yearStemIndex = ((actualYear - 4) % 10 + 10) % 10;
     const yearBranchIndex = ((actualYear - 4) % 12 + 12) % 12;
 
-    // 五虎遁月起月干 (甲己之年丙作首)
     const tigerStartStem = [2, 4, 6, 8, 0, 2, 4, 6, 8, 0][yearStemIndex];
     const monthStemIndex = (tigerStartStem + (lunarMonth - 1)) % 10;
-    const monthBranchIndex = (2 + (lunarMonth - 1)) % 12; // 寅為正月
+    const monthBranchIndex = (2 + (lunarMonth - 1)) % 12;
 
-    // 日干支
     const dayPillar = calculateDayStemBranch(targetDate);
 
-    // 五鼠遁日起時干 (甲己還加甲)
     const ratStartStem = [0, 2, 4, 6, 8, 0, 2, 4, 6, 8][dayPillar.stemIndex];
     const hourStemIndex = (ratStartStem + hourBranchIndex) % 10;
 
@@ -234,14 +226,13 @@
   function calculateElementBureau(lifeStemIdx, lifeBranchIdx) {
     const stemNum = Math.floor(lifeStemIdx / 2) + 1;
     let branchNum = 1;
-    if ([0, 1, 6, 7].includes(lifeBranchIdx)) branchNum = 1; // 子丑午未
-    else if ([2, 3, 8, 9].includes(lifeBranchIdx)) branchNum = 2; // 寅卯申酉
-    else branchNum = 3; // 辰巳戌亥
+    if ([0, 1, 6, 7].includes(lifeBranchIdx)) branchNum = 1;
+    else if ([2, 3, 8, 9].includes(lifeBranchIdx)) branchNum = 2;
+    else branchNum = 3;
 
     let sum = stemNum + branchNum;
     if (sum > 5) sum -= 5;
 
-    // 1=木三局, 2=金四局, 3=水二局, 4=火六局, 5=土五局
     const bureauMap = { 1: 3, 2: 4, 3: 2, 4: 6, 5: 5 };
     const num = bureauMap[sum] || 3;
     return ELEMENT_BUREAUS[num];
@@ -257,7 +248,6 @@
       k = x - remainder;
       q = Math.floor((lunarDay + k) / x);
     }
-    // 寅宮為起點 (2)
     let targetIndex = (2 + q - 1) % 12;
     if (k % 2 === 1) {
       targetIndex = (targetIndex - k + 12) % 12;
@@ -268,7 +258,7 @@
   }
 
   function calculateTianfuBranch(ziweiBranchIdx) {
-    return (4 - ziweiBranchIdx + 12) % 12; // 辰(4) - 紫微
+    return (4 - ziweiBranchIdx + 12) % 12;
   }
 
   // MARK: - 生年四化 (含倪海廈天紀庚干體系)
@@ -288,7 +278,6 @@
     return tables[yearStemIdx];
   }
 
-  // MARK: - 輔吉煞曜起法
   function calculateLuCun(yearStemIdx) {
     const map = [2, 3, 5, 6, 5, 6, 8, 9, 11, 0];
     return map[yearStemIdx];
@@ -322,7 +311,6 @@
     return map[yearBranchIdx];
   }
 
-  // 星曜廟旺利陷字典
   function getStarBrightness(starName, branchIdx) {
     const b = branchIdx;
     switch (starName) {
@@ -428,24 +416,20 @@
 
     let effectiveDate = new Date(birthDate);
     if (isUnknownHour) {
-      effectiveDate.setHours(0, 30, 0, 0); // 統一起子時早子
+      effectiveDate.setHours(0, 30, 0, 0);
     }
 
-    // 1. 真太陽時校準
     const solarCorrection = calculateTrueSolarTime(effectiveDate, city);
     const targetDate = useTrueSolarTime ? solarCorrection.trueSolarDate : effectiveDate;
     const hourBranchIndex = isUnknownHour ? 0 : solarCorrection.hourBranchIndex;
 
-    // 2. 農曆八字
     const lunarInfo = getLunarDateInfo(targetDate, hourBranchIndex, solarCorrection.isLateZi);
     const effectiveMonth = lunarInfo.lunarMonth;
 
-    // 3. 定命宮與身宮 (寅宮2起生月逆數生時為命宮，順數生時為身宮)
     const monthBranchIndex = (2 + effectiveMonth - 1) % 12;
     const lifeBranchIndex = (monthBranchIndex - hourBranchIndex + 12) % 12;
     const bodyBranchIndex = (monthBranchIndex + hourBranchIndex) % 12;
 
-    // 4. 五虎遁年起月干：決定 12 宮天干 (寅宮起算)
     const tigerStartStem = [2, 4, 6, 8, 0, 2, 4, 6, 8, 0][lunarInfo.yearStemIndex];
     const palaceStems = new Array(12);
     for (let i = 0; i < 12; i++) {
@@ -454,11 +438,9 @@
       palaceStems[bIdx] = sIdx;
     }
 
-    // 5. 定五行局
     const lifeStemIndex = palaceStems[lifeBranchIndex];
     const elementBureau = calculateElementBureau(lifeStemIndex, lifeBranchIndex);
 
-    // 6. 十二宮基本資料
     const palaces = [];
     for (let b = 0; b < 12; b++) {
       const offset = (lifeBranchIndex - b + 12) % 12;
@@ -478,7 +460,6 @@
       });
     }
 
-    // 7. 起大限歲數 (陽男陰女順行，陰男陽女逆行)
     const isYangYear = HEAVENLY_STEMS[lunarInfo.yearStemIndex].isYang;
     const isMale = gender.includes('男');
     const isClockwise = (isYangYear && isMale) || (!isYangYear && !isMale);
@@ -492,7 +473,6 @@
       palaces[targetB].decadeEndAge = startAge + 9;
     }
 
-    // 8. 安十四主星
     const ziweiBranch = calculateZiweiBranch(lunarInfo.lunarDay, bureauNum);
     const tianfuBranch = calculateTianfuBranch(ziweiBranch);
 
@@ -536,7 +516,6 @@
       });
     }
 
-    // 9. 安六吉六煞輔曜
     const zuoFuIdx = (4 + (effectiveMonth - 1)) % 12;
     const youBiIdx = (10 - (effectiveMonth - 1) + 12) % 12;
     starsMap[zuoFuIdx].push({ name: '左輔', category: 'lucky', element: '土' });
@@ -566,7 +545,6 @@
     const tianMaIdx = calculateTianMa(lunarInfo.yearBranchIndex);
     starsMap[tianMaIdx].push({ name: '天馬', category: 'auxiliary', element: '火' });
 
-    // 10. 生年四化標註
     const fourTransformations = calculateFourTransformations(lunarInfo.yearStemIndex);
     for (let b = 0; b < 12; b++) {
       for (const s of starsMap[b]) {
@@ -580,11 +558,9 @@
 
     const lifeMaster = calculateLifeMaster(lifeBranchIndex);
     const bodyMaster = calculateBodyMaster(lunarInfo.yearBranchIndex);
-
-    // 11. 倪海廈《天紀》經典格局匹配
     const patterns = matchTianjiPatterns(palaces, lifeBranchIndex);
 
-    const chart = {
+    return {
       userName: userName,
       gender: gender,
       isUnknownHour: isUnknownHour,
@@ -601,8 +577,6 @@
       patterns: patterns,
       fourTransformations: fourTransformations
     };
-
-    return chart;
   }
 
   // MARK: - 倪海廈《天紀》格局匹配
@@ -619,7 +593,6 @@
       palaces[idx].stars.forEach(s => sanFangStars.add(s.name));
     });
 
-    // 1. 紫府同宮格
     if ((lifeBranchIdx === 2 || lifeBranchIdx === 8) && lifeStars.has('紫微') && lifeStars.has('天府')) {
       matched.push({
         name: '紫府同宮格',
@@ -630,7 +603,6 @@
       });
     }
 
-    // 2. 日月並明格
     const sunInSi = palaces[5].stars.some(s => s.name === '太陽');
     const moonInYou = palaces[9].stars.some(s => s.name === '太陰');
     if ((lifeBranchIdx === 1 || lifeBranchIdx === 7) && sunInSi && moonInYou) {
@@ -643,7 +615,6 @@
       });
     }
 
-    // 3. 日照雷門格
     if (lifeBranchIdx === 3 && lifeStars.has('太陽') && lifeStars.has('天梁')) {
       matched.push({
         name: '日照雷門格 (日出扶桑)',
@@ -654,7 +625,6 @@
       });
     }
 
-    // 4. 月朗天門格
     if (lifeBranchIdx === 11 && lifeStars.has('太陰')) {
       matched.push({
         name: '月朗天門格',
@@ -665,7 +635,6 @@
       });
     }
 
-    // 5. 巨日同宮格
     if ((lifeBranchIdx === 2 || lifeBranchIdx === 8) && lifeStars.has('太陽') && lifeStars.has('巨門')) {
       matched.push({
         name: '巨日同宮格',
@@ -676,7 +645,6 @@
       });
     }
 
-    // 6. 機月同梁格
     if (['天機', '太陰', '天同', '天梁'].every(s => sanFangStars.has(s))) {
       matched.push({
         name: '機月同梁格',
@@ -687,7 +655,6 @@
       });
     }
 
-    // 7. 殺破狼格
     if (['七殺', '破軍', '貪狼'].every(s => sanFangStars.has(s))) {
       matched.push({
         name: '殺破狼格 (動態開創格)',
@@ -698,7 +665,6 @@
       });
     }
 
-    // 8. 陽梁昌祿格
     if (['太陽', '天梁', '文昌', '祿存'].every(s => sanFangStars.has(s))) {
       matched.push({
         name: '陽梁昌祿格',
@@ -709,7 +675,6 @@
       });
     }
 
-    // 9. 馬頭帶劍格
     if (lifeBranchIdx === 6 && lifeStars.has('擎羊')) {
       matched.push({
         name: '馬頭帶劍格',
@@ -770,7 +735,6 @@
 
     const majorNames = lifePalace.stars.filter(s => s.category === 'major').map(s => s.name);
 
-    // 標題與副標
     let headline = '順應天時，蓄勢待發的沉著之星';
     let subHeadline = '命格內斂溫厚，循序漸進方顯英雄本色，厚積薄發必有大成。';
 
@@ -803,7 +767,6 @@
       subHeadline = '處世穩健有度、包容宏大，兼具守成與開創之能，晚景昌隆安逸。';
     }
 
-    // 核心三維度
     let coreAdvantage = '處事踏實有韌性，善於在平凡中積累不凡，抗風險能力與耐力出類拔萃。';
     if (majorNames.includes('破軍') || majorNames.includes('七殺')) {
       coreAdvantage = '你膽子大、有執行魄力，開新路不畏艱難，挫敗之後能以驚人速度滿血復活。';
@@ -831,7 +794,6 @@
       return p.stars.filter(s => s.transformation).map(s => `${s.name}化${s.transformation}`);
     }
 
-    // 各維度深度子卡片
     const dimensionDetails = {
       '財富': {
         name: '財富',
@@ -961,10 +923,10 @@
     };
   }
 
-  // MARK: - 流年與時光軌道運勢動態計算 (Timeline Fortune Engine)
+  // MARK: - 流年運勢深度演算法 (Timeline Fortune Engine - 移植自 iOS/Android 完整架構)
   function calculateTimelineFortune(chart, scope, options) {
     options = options || {};
-    const decadeIndex = options.decadeIndex || 0;
+    const decadeIndex = options.decadeIndex !== undefined ? options.decadeIndex : 0;
     const selectedYear = options.selectedYear || new Date().getFullYear();
     const selectedMonth = options.selectedMonth || 1;
     const selectedDay = options.selectedDay || 1;
@@ -1006,87 +968,247 @@
           11: 1, 3: 1, 7: 1    // 亥卯未起丑
         };
         const startB = startBranchMap[birthBranchIdx] !== undefined ? startBranchMap[birthBranchIdx] : 4;
-        const curYear = new Date().getFullYear();
         const bYear = chart.solarDate.getFullYear();
-        const nominalAge = Math.max(curYear - bYear + 1, 1);
+        const nominalAge = Math.max(selectedYear - bYear + 1, 1);
         const minorIdx = (startB + (nominalAge - 1)) % 12;
         targetPalace = chart.palaces[minorIdx];
         focusText = `實歲 ${nominalAge} 歲 小限心境微氣候`;
         timeLabel = `${nominalAge}歲小限`;
         break;
 
-      case 'monthly': // 流月
+      case 'monthly': // 流月 (以流年地支起正月順行)
         const safeMonth = Math.min(Math.max(selectedMonth, 1), 12);
-        const curY = new Date().getFullYear();
-        const yBranchIdx = ((curY - 4) % 12 + 12) % 12;
-        const mBranchIdx = (yBranchIdx + (safeMonth - 1)) % 12;
+        const yBIdx = ((selectedYear - 4) % 12 + 12) % 12;
+        const mBranchIdx = (yBIdx + (safeMonth - 1)) % 12;
         targetPalace = chart.palaces[mBranchIdx];
         const monthNames = ['', '正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '臘月'];
-        focusText = `農曆 ${monthNames[safeMonth]} 流月吉凶氣候`;
+        focusText = `${selectedYear}年 農曆【${monthNames[safeMonth]}】值月氣候`;
         timeLabel = `農曆${monthNames[safeMonth]}`;
         break;
 
-      case 'daily': // 流日
+      case 'daily': // 流日 (由流月宮位起初一順數)
+        const safeM = Math.min(Math.max(selectedMonth, 1), 12);
         const safeDay = Math.min(Math.max(selectedDay, 1), 30);
-        const dayBIdx = (safeDay - 1) % 12;
-        targetPalace = chart.palaces[dayBIdx];
-        focusText = `農曆 ${safeDay} 日 流日值日氣候`;
-        timeLabel = `農曆${safeDay}日`;
+        const yB = ((selectedYear - 4) % 12 + 12) % 12;
+        const mB = (yB + (safeM - 1)) % 12;
+        const dayBranchIdx = (mB + (safeDay - 1)) % 12;
+        targetPalace = chart.palaces[dayBranchIdx];
+        const mNames = ['', '正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '臘月'];
+        focusText = `${selectedYear}年 農曆${mNames[safeM]}【${safeDay}日】值日氣候`;
+        timeLabel = `農曆${mNames[safeM]}${safeDay}日`;
         break;
     }
 
+    const branch = targetPalace.branch;
+    const palaceType = targetPalace.name;
     const majorStars = targetPalace.stars.filter(s => s.category === 'major');
+    const luckyStars = targetPalace.stars.filter(s => s.category === 'lucky');
+    const fierceStars = targetPalace.stars.filter(s => s.category === 'fierce');
+
     const majorNames = majorStars.map(s => s.name);
-    const starsDisplay = majorStars.map(s => `${s.name}${s.brightness ? `[${s.brightness}]` : ''}${s.transformation ? ` 化${s.transformation}` : ''}`).join('、') || '借對宮星曜照會';
+    const starsDisplay = majorStars.map(s => `${s.name}${s.brightness ? `[${s.brightness}]` : ''}${s.transformation ? ` 化${s.transformation}` : ''}`).join('、') || '命無正曜 (借對宮星曜吉光照耀)';
 
-    const pName = targetPalace.name;
     const hasLu = targetPalace.stars.some(s => s.transformation === '祿');
+    const hasQuan = targetPalace.stars.some(s => s.transformation === '權');
+    const hasKe = targetPalace.stars.some(s => s.transformation === '科');
     const hasJi = targetPalace.stars.some(s => s.transformation === '忌');
-    const hasLucky = targetPalace.stars.some(s => s.category === 'lucky');
-    const hasFierce = targetPalace.stars.some(s => s.category === 'fierce');
 
-    let headline = `${timeLabel}・天賜良機，穩步拓土`;
-    let plainOverview = `此時期主氣落入【${pName}】(${targetPalace.branch}宮)，由「${starsDisplay}」坐鎮。整體氛圍呈現出蓄勢待發、機運與考驗並存的動態局面。`;
-    const opportunities = [];
-    const precautions = [];
+    // 1. 動態標題建構
+    const starPrefix = majorNames.length > 0 ? `【${majorNames.slice(0, 2).join('・')}】` : '【借星吉照】';
+    let headline = `${starPrefix} ${timeLabel}臨${palaceType}：順應星勢節奏，步步落實漸入佳境`;
 
     if (hasLu) {
-      headline = `${timeLabel}・吉星高照，財福相隨`;
-      opportunities.push('逢生年或運勢化祿照耀，財務與合作契機大增，宜乘勝追擊拓寬收益通路。');
-    }
-    if (hasLucky) {
-      opportunities.push('得吉星拱照，人脈助力充足，遇瓶頸時多向專業導師或長輩請益，能迅速撥雲見日。');
-    }
-    if (opportunities.length === 0) {
-      opportunities.push(`深耕【${pName}】相關核心本業，循序漸進蓄積籌碼，以實力贏得厚實信賴。`);
+      headline = `${starPrefix} ${timeLabel}逢化祿吉慶，【${palaceType}】生機勃發收穫豐碩`;
+    } else if (hasQuan) {
+      headline = `${starPrefix} ${timeLabel}權柄在握，【${palaceType}】雷厲風行拓局先鋒`;
+    } else if (hasJi) {
+      headline = `${starPrefix} ${timeLabel}修心蓄力期，【${palaceType}】以穩為上防暗礁波折`;
+    } else {
+      switch (palaceType) {
+        case '官祿':
+          headline = `${starPrefix} ${timeLabel}行至官祿主場：事業突破在即，才幹展露贏得信任`;
+          break;
+        case '財帛':
+          headline = `${starPrefix} ${timeLabel}聚焦財帛運轉：求財管道明朗，穩紮穩打積累基石`;
+          break;
+        case '夫妻':
+          headline = `${starPrefix} ${timeLabel}緣牽夫妻情誼：以心印心相惜，共築溫暖情感港灣`;
+          break;
+        case '遷移':
+          headline = `${starPrefix} ${timeLabel}出門吉星相照：異地開拓順遂，動態交流打開格局`;
+          break;
+        case '田宅':
+          headline = `${starPrefix} ${timeLabel}安固田宅基業：聚財安家之時，居家溫馨福澤庇蔭`;
+          break;
+        case '疾厄':
+          headline = `${starPrefix} ${timeLabel}調和身心元氣：順應四季節奏，養精蓄銳厚積薄發`;
+          break;
+        case '交友':
+          headline = `${starPrefix} ${timeLabel}人脈圈層流轉：良師益友相攜，貴人提攜共贏契機`;
+          break;
+        case '福德':
+          headline = `${starPrefix} ${timeLabel}心靈福澤充盈：放寬心胸自洽，精神富足樂得自在`;
+          break;
+        case '命宮':
+          headline = `${starPrefix} ${timeLabel}本命元辰閃耀：立足核心原則，開拓個人獨特天地`;
+          break;
+        case '子女':
+          headline = `${starPrefix} ${timeLabel}春風化雨入子女：靈感生機勃發，傳承啟發後勁充沛`;
+          break;
+        case '兄弟':
+          headline = `${starPrefix} ${timeLabel}手足知己相扶：齊心協力開路，同儕守望互為倚靠`;
+          break;
+        case '父母':
+          headline = `${starPrefix} ${timeLabel}承沐父母庇蔭：尊長指引前路，孝悌知恩聚福納祥`;
+          break;
+      }
     }
 
+    // 2. 動態白話深度詳解
+    let starsDesc = '星曜氣場平和，借對宮吉曜照拂，處事順遂圓融、彈性極大。';
+    if (majorNames.includes('紫微') || majorNames.includes('天府')) {
+      starsDesc = '貴星坐鎮，自帶沉穩格局與開拓擔當，易獲貴人賞識與同儕信賴。';
+    } else if (majorNames.includes('武曲') || majorNames.includes('太陰')) {
+      starsDesc = '財星照耀，注重實質成果與資源沉澱，善於在變局中捕捉務實商機。';
+    } else if (majorNames.includes('天機') || majorNames.includes('巨門')) {
+      starsDesc = '智慧與策劃星曜活躍，思維敏捷清晰，能靠優異的談判與方案規劃出奇制勝。';
+    } else if (majorNames.includes('太陽') || majorNames.includes('天梁')) {
+      starsDesc = '浩然正氣與庇蔭星臨門，樂於助人累積深厚福德，出外逢凶化吉。';
+    } else if (majorNames.includes('七殺') || majorNames.includes('破軍') || majorNames.includes('貪狼')) {
+      starsDesc = '殺破狼生機躍動，破除陳規舊習、主動求新求變，具有驚人的開拓爆發力。';
+    }
+
+    let transDesc = '';
+    if (hasLu) transDesc += ' 本宮逢生年化祿，財祿與人緣如虎添翼，是全力推進目標的最佳時機！';
+    if (hasQuan) transDesc += ' 宮內坐鎮化權，主導權與執行力極強，宜把握競爭先機。';
+    if (hasKe) transDesc += ' 遇化科吉曜，文思泉湧、考運考績順遂，美名廣傳。';
+    if (hasJi) transDesc += ' 逢化忌干擾，提示此階段切勿心浮氣躁，重大決定宜三思而後行，穩健是第一要務。';
+
+    let overview = '';
+    switch (scope) {
+      case 'natal':
+        overview = `你的本命元辰由 ${starsDisplay} 鎮守，為一生的性格內核與天賦底層代碼。${starsDesc}${transDesc} 任何大限流年的起伏皆以本命格局為根基，只要認清自我長處並持續深耕，自能成就不凡人生！`;
+        break;
+      case 'decade':
+        overview = `在【${timeLabel}】這關鍵十年中，時空核心聚焦於【${palaceType}】所管轄的生命領域。此十年由 ${starsDisplay} 牽動，${starsDesc}${transDesc} 適合鎖定長期核心賽道，建立不可替代的專業護城河。`;
+        break;
+      case 'annual':
+        overview = `西曆【${timeLabel}】，你的流年命宮行至 ${branch} 宮，正好對應本命【${palaceType}】。受 ${starsDisplay} 氣場所引領，${starsDesc}${transDesc} 整體年度節奏鮮明，務必抓住核心矛盾集中發力！`;
+        break;
+      case 'minor':
+        overview = `小限反映【${timeLabel}】的個人內心心境、情緒起伏與健康微氣候。小限行至【${palaceType}】，宮內見 ${starsDisplay}。${starsDesc}${transDesc} 宜多傾聽內在真實聲音，注重身心放鬆與情緒平衡。`;
+        break;
+      case 'monthly':
+        overview = `【${timeLabel}】運勢行至 ${branch} 宮【${palaceType}】。受 ${starsDisplay} 值月主導，${starsDesc}${transDesc} 本月節奏緊湊明快，適合把積累的待辦要務逐一落地執行。`;
+        break;
+      case 'daily':
+        overview = `今日流日氣場專注於【${palaceType}】(${branch}宮)，由 ${starsDisplay} 值日守護。${starsDesc}${transDesc} 直覺與行動力在線，適合做出關鍵決策與落實今日核心任務！`;
+        break;
+    }
+
+    // 3. 動態機遇
+    const opportunities = [];
+    switch (palaceType) {
+      case '官祿':
+        opportunities.push('職場上有望承接核心業務或獲得晉升拔擢，發揮關鍵影響力。');
+        opportunities.push('專業技能備受同行或長官認可，能建立起無可替代的個人信譽。');
+        break;
+      case '財帛':
+        opportunities.push('求財管道多元通達，適合推進穩健理財計畫或開啟副業獲利。');
+        opportunities.push('對市場價值具備敏銳嗅覺，能做出精準務實的財務決策。');
+        break;
+      case '夫妻':
+        opportunities.push('親密關係迎來深度溝通契機，能增進彼此默契與長遠安全感。');
+        opportunities.push('單身者容易在志趣相投的圈層中結識成熟且具包容力的優質良緣。');
+        break;
+      case '遷移':
+        opportunities.push('出外公差、遠行求學或跨領域探索運氣極佳，能拓寬眼界與格局。');
+        opportunities.push('異地貴人主動釋放善意，跨界合作容易談成重大共識。');
+        break;
+      case '交友':
+        opportunities.push('能結識視野開闊的同頻夥伴，同儕互助協同效應顯著。');
+        opportunities.push('適合組織團隊或參與優質社群，人脈資源將轉化為實質助力。');
+        break;
+      case '田宅':
+        opportunities.push('家庭基業安定和睦，置產裝修或資產配置迎來利好時機。');
+        opportunities.push('居家環境能提供充沛的充電能量與身心歸屬感。');
+        break;
+      default:
+        opportunities.push('行事果決有條理，能迅速排除日常障礙並贏得身邊人的支持。');
+        opportunities.push('心態積極樂觀，面對突發狀況能隨機應變、化被動為主動。');
+        break;
+    }
+    if (hasLu || hasQuan) {
+      opportunities.push('自帶旺氣光環，關鍵時刻總有長輩或關鍵資源主動到位扶持。');
+    }
+    if (luckyStars.length > 0) {
+      opportunities.push('吉曜拱照，文書簽約、考試合格或重要認證皆能順利過關。');
+    }
+
+    // 4. 動態暗礁與避坑
+    const precautions = [];
     if (hasJi) {
-      headline = `${timeLabel}・暗湧潛伏，宜守不宜燥`;
-      precautions.push('宮內逢化忌牽動，容易在溝通合作或財務簽約上遭遇波折，重大合約務必白紙黑字審慎推敲。');
+      precautions.push('此階段切忌急躁冒進或跟風投資，重要條款與金錢往來務必白紙黑字。');
+      precautions.push('溝通時保持心平氣和，切莫因口直心快而引發不必要的口舌誤會。');
     }
-    if (hasFierce) {
-      precautions.push('見煞曜干擾，行事切忌性急衝動，遇突發狀況宜冷靜三思，以柔克剛方能化險為夷。');
+    if (fierceStars.length > 0) {
+      const fierceNames = fierceStars.map(s => s.name).join('、');
+      precautions.push(`宮逢煞曜（${fierceNames}），需防範突發急躁、情緒緊繃或交通行車安全。`);
     }
-    if (precautions.length === 0) {
-      precautions.push('防範因過度樂觀而疏忽細節，定期覆盤進度方保萬無一失。');
+    switch (palaceType) {
+      case '官祿':
+        precautions.push('切莫事必躬親導致體力透支，適時授權更能維持高效領導力。');
+        break;
+      case '財帛':
+        precautions.push('嚴拒高槓桿賭徒心態與熟人借貸代墊，守住流動資金才是真正贏家。');
+        break;
+      case '夫妻':
+        precautions.push('遇爭執多給彼此緩衝空間，切莫在盛怒之下做出過激承諾或決斷。');
+        break;
+      case '疾厄':
+        precautions.push('注意規律作息與飲食均衡，及時抒解肩頸疲勞與精神壓力。');
+        break;
+      default:
+        if (precautions.length === 0) {
+          precautions.push('行事切忌三分鐘熱度，維持專注度方能收穫最甜美果實。');
+        }
+        break;
     }
 
-    const fawnAdvice = `小鹿兒指引：面對【${timeLabel}】氣候，保持平常心就是最強大的護身符。順風時不傲慢，逆風時不氣餒，好運常伴左右！`;
+    // 5. 動態小鹿兒錦囊
+    let fawnAdvice = '小鹿兒心靈寄語：認同自己的獨特步伐，順應天時、知命造命，你永遠是自己生命中最棒的舵手！';
+    if (hasJi) {
+      fawnAdvice = '小鹿兒特別叮嚀：化忌是老天爺給予的沉澱修煉禮物！放慢腳步、深呼吸，不爭一時長短，熬過風雨便是繁花似錦！';
+    } else {
+      switch (scope) {
+        case 'annual':
+          fawnAdvice = '小鹿兒流年錦囊：今年是開拓視野的幸運年份！多穿搭大地色與墨綠系，常帶微笑，身邊處處皆是你的開運貴人！';
+          break;
+        case 'monthly':
+          fawnAdvice = '小鹿兒流月叮嚀：這個月行動力滿分！給自己泡一杯清香溫茶，踏實走好每一步，幸運就在前方等著你！';
+          break;
+        case 'daily':
+          fawnAdvice = '小鹿兒每日一句：今天是你創造美好記憶的一天，順心而行、善待自己，美好自會如約而至！';
+          break;
+        case 'decade':
+          fawnAdvice = '小鹿兒大限錦囊：人生十年一大變！選對方向、專注深耕，時間會給出最驚喜的答案！';
+          break;
+      }
+    }
 
     return {
       scope: scope,
       focusText: focusText,
       timeLabel: timeLabel,
       palace: targetPalace,
-      palaceName: pName,
+      palaceName: `【${palaceType}】(${branch}宮)`,
       starsDisplay: starsDisplay,
       headline: headline,
-      plainOverview: plainOverview,
-      opportunities: opportunities,
-      precautions: precautions,
+      plainOverview: overview,
+      opportunities: opportunities.slice(0, 3),
+      precautions: precautions.slice(0, 2),
       fawnAdvice: fawnAdvice,
-      highlightedBranch: targetPalace.branch
+      highlightedBranch: branch
     };
   }
 
@@ -1127,7 +1249,6 @@
       headline = '「靈魂有共鳴，言語有溫度，相處百看不厭。」';
     }
 
-    // 四化互照
     const blessings = [];
     blessings.push(`【${nameA}】的生年吉化飛入【${nameB}】的命格三方，無形中為對方帶來事業信心與開拓底氣。`);
     blessings.push(`【${nameB}】的五行氣場能平抑【${nameA}】的急躁情緒，在關鍵時刻提供冷靜安定的力量。`);
@@ -1180,7 +1301,7 @@
 • 流派標準：倪海廈先生《天紀》排盤體系・真太陽時精密天文校驗
 
 ━━━━━━━━━━━━━━━━━━━━
-✨【白話核心天命總綱】
+✨【您的現代天命總綱】
 「${metis.headline}」
 ${metis.subHeadline}
 
@@ -1245,7 +1366,7 @@ ${metis.growthChallenge}
     return report;
   }
 
-  // MARK: - 靜默 Google Sheets 雲端同調經理 (Silent Background Sync with Offline Queue)
+  // MARK: - 靜默 Google Sheets 雲端同調經理
   const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzUZm93oNx74FAUj-5ZkUI8pNLXh4AnY_h_UV6VlgzWmWw4gC4chrYGQajC8aePgtM5/exec';
   const QUEUE_STORAGE_KEY = 'XiaoLuer_Web_GoogleSheet_OfflineQueue';
 
@@ -1286,7 +1407,6 @@ ${metis.growthChallenge}
       platform: 'Web (小鹿兒算命)'
     };
 
-    // 檢查網路狀態
     if (!navigator.onLine) {
       const queue = getOfflineQueue();
       queue.push(payload);
@@ -1294,7 +1414,6 @@ ${metis.growthChallenge}
       return;
     }
 
-    // 發送 POST 請求 (使用 no-cors 或 application/json 以利 GAS 接收)
     fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1321,9 +1440,7 @@ ${metis.growthChallenge}
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(item)
-      }).then(() => {
-        // 成功發送
-      }).catch(() => {
+      }).then(() => {}).catch(() => {
         remaining.push(item);
       }).finally(() => {
         completedCount++;
@@ -1334,12 +1451,10 @@ ${metis.growthChallenge}
     });
   }
 
-  // 監聽網路重新連線事件，自動補傳
   if (typeof window !== 'undefined') {
     window.addEventListener('online', flushOfflineQueue);
   }
 
-  // 導出全局命名空間
   global.ZiweiEngine = {
     HEAVENLY_STEMS: HEAVENLY_STEMS,
     EARTHLY_BRANCHES: EARTHLY_BRANCHES,

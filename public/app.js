@@ -7,8 +7,9 @@
 
   // MARK: - 應用狀態管理 (State)
   const state = {
+    hasSubmittedBirth: false,
     currentUser: {
-      userName: '命主',
+      userName: '請輸入您的姓名',
       gender: '乾造 (男)',
       birthDateStr: '1995-10-24',
       birthTimeStr: '14:30',
@@ -30,7 +31,8 @@
       decadeIndex: 0,
       selectedYear: new Date().getFullYear(),
       selectedMonth: 1,
-      selectedDay: 1
+      selectedDay: 1,
+      highlightedBranch: '卯'
     },
     chart: null,
     partnerChart: null
@@ -38,10 +40,21 @@
 
   // MARK: - DOM 元素獲取
   const elements = {
+    // Landing & Sections
+    landingHeroSection: document.getElementById('landingHeroSection'),
+    resultsDashboard: document.getElementById('resultsDashboard'),
+    landingBirthForm: document.getElementById('landingBirthForm'),
+    landingInputName: document.getElementById('landingInputName'),
+    landingInputGender: document.getElementById('landingInputGender'),
+    landingInputBirthDate: document.getElementById('landingInputBirthDate'),
+    landingInputBirthTime: document.getElementById('landingInputBirthTime'),
+    landingInputUnknownHour: document.getElementById('landingInputUnknownHour'),
+    landingInputCity: document.getElementById('landingInputCity'),
+
     // Top Bar
-    headerTitle: document.getElementById('headerTitle'),
+    brandHome: document.getElementById('brandHome'),
     userQuickInfo: document.getElementById('userQuickInfo'),
-    btnOpenBirthModal: document.getElementById('btnOpenBirthModal'),
+    btnHeaderResetBirth: document.getElementById('btnHeaderResetBirth'),
     btnOpenShareModal: document.getElementById('btnOpenShareModal'),
 
     // Tabs
@@ -66,12 +79,37 @@
 
     // Timeline View
     scopeBtns: document.querySelectorAll('.scope-btn'),
-    timelineSliderRow: document.getElementById('timelineSliderRow'),
+    timelineCtrlNatal: document.getElementById('timelineCtrlNatal'),
+    timelineCtrlDecade: document.getElementById('timelineCtrlDecade'),
+    timelineCtrlAnnual: document.getElementById('timelineCtrlAnnual'),
+    timelineCtrlMinor: document.getElementById('timelineCtrlMinor'),
+    timelineCtrlMonthly: document.getElementById('timelineCtrlMonthly'),
+    timelineCtrlDaily: document.getElementById('timelineCtrlDaily'),
+
+    // Timeline Controls
+    decadePillsRibbon: document.getElementById('decadePillsRibbon'),
     timelineSlider: document.getElementById('timelineSlider'),
     sliderLabel: document.getElementById('sliderLabel'),
-    timelineYearSelect: document.getElementById('timelineYearSelect'),
-    timelineMonthSelect: document.getElementById('timelineMonthSelect'),
-    timelineDaySelect: document.getElementById('timelineDaySelect'),
+
+    annualYearPills: document.getElementById('annualYearPills'),
+    btnPrevYear: document.getElementById('btnPrevYear'),
+    btnNextYear: document.getElementById('btnNextYear'),
+
+    btnMinorPrevAge: document.getElementById('btnMinorPrevAge'),
+    minorAgeDisplay: document.getElementById('minorAgeDisplay'),
+    btnMinorNextAge: document.getElementById('btnMinorNextAge'),
+
+    monthlyPillsRibbon: document.getElementById('monthlyPillsRibbon'),
+    monthlyCurrentYearBadge: document.getElementById('monthlyCurrentYearBadge'),
+
+    dailyMonthSelect: document.getElementById('dailyMonthSelect'),
+    btnDailyPrevDay: document.getElementById('btnDailyPrevDay'),
+    dailyDayDisplay: document.getElementById('dailyDayDisplay'),
+    btnDailyNextDay: document.getElementById('btnDailyNextDay'),
+    dailyQuickDaysRibbon: document.getElementById('dailyQuickDaysRibbon'),
+    dailyDaySlider: document.getElementById('dailyDaySlider'),
+
+    // Timeline Result Card
     timelineFocusBadge: document.getElementById('timelineFocusBadge'),
     timelineHeadline: document.getElementById('timelineHeadline'),
     timelineOverview: document.getElementById('timelineOverview'),
@@ -132,23 +170,28 @@
   function initCitySelects() {
     const cities = ZiweiEngine.PRESET_CITIES;
     const opts = cities.map((c, i) => `<option value="${i}">${c.region} - ${c.name}</option>`).join('');
+    if (elements.landingInputCity) elements.landingInputCity.innerHTML = opts;
     if (elements.inputCity) elements.inputCity.innerHTML = opts;
     if (elements.inputPartnerCity) elements.inputPartnerCity.innerHTML = opts;
   }
 
   // MARK: - 排盤計算觸發 (Recalculate Chart)
   function recalculateChart(syncToSheets = false) {
+    let cleanName = state.currentUser.userName.trim();
+    if (!cleanName || cleanName === '請輸入您的姓名') {
+      cleanName = '命主';
+    }
+
     const [y, m, d] = state.currentUser.birthDateStr.split('-').map(Number);
     const [h, min] = state.currentUser.birthTimeStr.split(':').map(Number);
     const birthDate = new Date(y, m - 1, d, h || 0, min || 0);
-
     const city = ZiweiEngine.PRESET_CITIES[state.currentUser.cityIndex] || ZiweiEngine.PRESET_CITIES[0];
 
     state.chart = ZiweiEngine.generateChart({
       birthDate: birthDate,
       city: city,
       gender: state.currentUser.gender,
-      userName: state.currentUser.userName || '命主',
+      userName: cleanName,
       isUnknownHour: state.currentUser.isUnknownHour
     });
 
@@ -187,7 +230,6 @@
   function renderQuickInfo() {
     const c = state.chart;
     if (!c) return;
-    const hourText = c.isUnknownHour ? '子時 (時辰未知)' : `${c.lunarInfo.hourBranch}時`;
     elements.userQuickInfo.innerHTML = `
       <div>命主：<span class="user-badge">${c.userName}</span>（${c.gender}）</div>
       <div>農曆：<b>${c.lunarInfo.lunarDateString}</b></div>
@@ -220,10 +262,8 @@
       <button class="dim-pill ${d === state.activeDimension ? 'active' : ''}" data-dim="${d}">${d}</button>
     `).join('');
 
-    // 維度詳細內容
     renderDimensionDetail(metis.dimensionDetails[state.activeDimension] || metis.dimensionDetails['財富']);
 
-    // 長篇總結
     elements.metisOverviewText.textContent = metis.detailedOverview;
     elements.metisActionAdvice.textContent = metis.actionableAdvice;
     elements.metisVerdict.textContent = metis.oneSentenceVerdict;
@@ -263,7 +303,6 @@
     `;
   }
 
-  // 繪製六維雷達圖 SVG
   function renderRadarChart(scores) {
     const keys = [
       { key: 'personality', label: '性格特質' },
@@ -279,7 +318,6 @@
     const radius = 105;
     const angleStep = (2 * Math.PI) / keys.length;
 
-    // 網格環
     let gridLines = '';
     [0.25, 0.5, 0.75, 1.0].forEach(rRatio => {
       const r = radius * rRatio;
@@ -290,7 +328,6 @@
       gridLines += `<polygon points="${pts}" fill="none" stroke="#CFBA9C" stroke-width="1" stroke-dasharray="${rRatio < 1 ? '3,3' : 'none'}"/>`;
     });
 
-    // 軸線與標籤
     let axes = '';
     keys.forEach((k, i) => {
       const a = i * angleStep - Math.PI / 2;
@@ -302,7 +339,6 @@
       axes += `<text x="${lx}" y="${ly}" font-family="Noto Serif TC, serif" font-size="11" fill="#34523F" font-weight="600" text-anchor="middle" dominant-baseline="central">${k.label}</text>`;
     });
 
-    // 數值多邊形
     const polyPts = keys.map((k, i) => {
       const val = Math.min(Math.max(scores[k.key] || 70, 0), 100);
       const r = (val / 100) * radius;
@@ -334,35 +370,21 @@
     const c = state.chart;
     if (!c) return;
 
-    // 4x4 座標對應宮位地支索引：
-    // [0,0]=5(巳), [0,1]=6(午), [0,2]=7(未), [0,3]=8(申)
-    // [1,0]=4(辰), [中宮 2x2],                 [1,3]=9(酉)
-    // [2,0]=3(卯), [中宮 2x2],                 [2,3]=10(戌)
-    // [3,0]=2(寅), [3,1]=1(丑), [3,2]=0(子), [3,3]=11(亥)
-
-    const gridLayout = [
-      5, 6, 7, 8,
-      4, 'CENTER', 9,
-      3, 10,
-      2, 1, 0, 11
-    ];
-
     let html = '';
-    // Row 0
+    // Row 0: 巳 午 未 申
     [5, 6, 7, 8].forEach(b => html += renderPalaceCell(c.palaces[b]));
-    // Row 1
+    // Row 1: 辰 [中宮] 酉
     html += renderPalaceCell(c.palaces[4]);
     html += renderCenterPalace(c);
     html += renderPalaceCell(c.palaces[9]);
-    // Row 2
+    // Row 2: 卯 [中宮] 戌
     html += renderPalaceCell(c.palaces[3]);
     html += renderPalaceCell(c.palaces[10]);
-    // Row 3
+    // Row 3: 寅 丑 子 亥
     [2, 1, 0, 11].forEach(b => html += renderPalaceCell(c.palaces[b]));
 
     elements.astrolabeGrid.innerHTML = html;
 
-    // 綁定宮位點擊
     document.querySelectorAll('.palace-cell').forEach(cell => {
       cell.addEventListener('click', function () {
         const bIdx = parseInt(this.getAttribute('data-branch'));
@@ -444,12 +466,74 @@
     `;
   }
 
-  // 4. 渲染流年運勢軌道 (Timeline Fortune)
+  // 4. 渲染流年運勢時光軸 (Timeline Fortune) - 全動態連動
   function renderTimelineFortune() {
     const c = state.chart;
     if (!c) return;
 
-    const tf = ZiweiEngine.calculateTimelineFortune(c, state.timeline.scope, {
+    // 依據當前 Scope 顯示對應的直覺簡化控制面板
+    const scope = state.timeline.scope;
+    elements.timelineCtrlNatal.style.display = (scope === 'natal') ? 'block' : 'none';
+    elements.timelineCtrlDecade.style.display = (scope === 'decade') ? 'block' : 'none';
+    elements.timelineCtrlAnnual.style.display = (scope === 'annual') ? 'block' : 'none';
+    elements.timelineCtrlMinor.style.display = (scope === 'minor') ? 'block' : 'none';
+    elements.timelineCtrlMonthly.style.display = (scope === 'monthly') ? 'block' : 'none';
+    elements.timelineCtrlDaily.style.display = (scope === 'daily') ? 'block' : 'none';
+
+    // 1. 大限控制面板渲染
+    if (scope === 'decade') {
+      elements.decadePillsRibbon.innerHTML = c.palaces.map((p, idx) => `
+        <button class="timeline-pill ${idx === state.timeline.decadeIndex ? 'active' : ''}" data-decade="${idx}">
+          ${p.decadeStartAge}-${p.decadeEndAge}歲 (${p.name})
+        </button>
+      `).join('');
+      const curP = c.palaces[state.timeline.decadeIndex] || c.palaces[0];
+      elements.sliderLabel.textContent = `當前：${curP.decadeStartAge}-${curP.decadeEndAge}歲【${curP.name}】`;
+      elements.timelineSlider.value = state.timeline.decadeIndex;
+    }
+
+    // 2. 流年控制面板高亮
+    if (scope === 'annual') {
+      document.querySelectorAll('#annualYearPills .timeline-pill').forEach(btn => {
+        const y = parseInt(btn.getAttribute('data-year'));
+        btn.classList.toggle('active', y === state.timeline.selectedYear);
+      });
+    }
+
+    // 3. 小限年齡顯示
+    if (scope === 'minor') {
+      const bYear = c.solarDate.getFullYear();
+      const nominalAge = Math.max(state.timeline.selectedYear - bYear + 1, 1);
+      elements.minorAgeDisplay.textContent = `實歲 ${nominalAge} 歲`;
+    }
+
+    // 4. 流月控制面板高亮與年份徽章
+    if (scope === 'monthly') {
+      const yBIdx = ((state.timeline.selectedYear - 4) % 12 + 12) % 12;
+      const ySIdx = ((state.timeline.selectedYear - 4) % 10 + 10) % 10;
+      elements.monthlyCurrentYearBadge.textContent = `${state.timeline.selectedYear} ${HEAVENLY_STEMS[ySIdx].name}${EARTHLY_BRANCHES[yBIdx].name}年`;
+
+      document.querySelectorAll('#monthlyPillsRibbon .timeline-pill').forEach(btn => {
+        const m = parseInt(btn.getAttribute('data-month'));
+        btn.classList.toggle('active', m === state.timeline.selectedMonth);
+      });
+    }
+
+    // 5. 流日控制面板高亮與日期步進顯示
+    if (scope === 'daily') {
+      const monthNames = ['', '正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '臘月'];
+      elements.dailyMonthSelect.value = state.timeline.selectedMonth;
+      elements.dailyDayDisplay.textContent = `農曆 ${monthNames[state.timeline.selectedMonth]}【 ${state.timeline.selectedDay} 日 】`;
+      elements.dailyDaySlider.value = state.timeline.selectedDay;
+
+      document.querySelectorAll('#dailyQuickDaysRibbon .timeline-pill').forEach(btn => {
+        const d = parseInt(btn.getAttribute('data-day'));
+        btn.classList.toggle('active', d === state.timeline.selectedDay);
+      });
+    }
+
+    // 計算並輸出動態解析結果
+    const tf = ZiweiEngine.calculateTimelineFortune(c, scope, {
       decadeIndex: state.timeline.decadeIndex,
       selectedYear: state.timeline.selectedYear,
       selectedMonth: state.timeline.selectedMonth,
@@ -458,22 +542,13 @@
 
     state.timeline.highlightedBranch = tf.highlightedBranch;
 
-    elements.timelineFocusBadge.textContent = tf.focusText;
+    elements.timelineFocusBadge.textContent = `${tf.focusText} ➔ ${tf.palaceName}`;
     elements.timelineHeadline.textContent = tf.headline;
     elements.timelineOverview.textContent = tf.plainOverview;
 
     elements.timelineOpportunities.innerHTML = tf.opportunities.map(o => `<li>${o}</li>`).join('');
     elements.timelinePrecautions.innerHTML = tf.precautions.map(p => `<li>${p}</li>`).join('');
     elements.timelineFawnAdvice.textContent = tf.fawnAdvice;
-
-    // 滑桿顯示
-    if (state.timeline.scope === 'decade') {
-      elements.timelineSliderRow.style.display = 'flex';
-      const curPalace = c.palaces[state.timeline.decadeIndex] || c.palaces[0];
-      elements.sliderLabel.textContent = `當前大限：${curPalace.decadeStartAge} - ${curPalace.decadeEndAge} 歲 (${curPalace.name})`;
-    } else {
-      elements.timelineSliderRow.style.display = 'none';
-    }
   }
 
   // 5. 渲染雙人合盤 (Synastry View)
@@ -547,7 +622,6 @@
     elements.palaceModal.classList.add('active');
   }
 
-  // MARK: - Toast 提示訊息
   function showToast(msg) {
     elements.toastNotice.textContent = msg;
     elements.toastNotice.classList.add('show');
@@ -558,6 +632,55 @@
 
   // MARK: - 事件監聽綁定 (Event Listeners)
   function setupEventListeners() {
+    // 1. 首頁排盤表單提交
+    if (elements.landingBirthForm) {
+      // 命主姓名輸入框點擊時自動清空預設文字
+      elements.landingInputName.addEventListener('focus', function () {
+        if (this.value === '請輸入您的姓名') {
+          this.value = '';
+        }
+      });
+      elements.landingInputName.addEventListener('blur', function () {
+        if (!this.value.trim()) {
+          this.value = '請輸入您的姓名';
+        }
+      });
+
+      elements.landingBirthForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const rawName = elements.landingInputName.value.trim();
+        state.currentUser.userName = (!rawName || rawName === '請輸入您的姓名') ? '命主' : rawName;
+        state.currentUser.gender = elements.landingInputGender.value;
+        state.currentUser.birthDateStr = elements.landingInputBirthDate.value;
+        state.currentUser.birthTimeStr = elements.landingInputBirthTime.value;
+        state.currentUser.isUnknownHour = elements.landingInputUnknownHour.checked;
+        state.currentUser.cityIndex = parseInt(elements.landingInputCity.value) || 0;
+
+        state.hasSubmittedBirth = true;
+        recalculateChart(true);
+
+        // 平滑切換視圖：隱藏首頁輸入卡片，顯示排盤結果看板
+        elements.landingHeroSection.style.display = 'none';
+        elements.resultsDashboard.classList.remove('hidden-section');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        showToast('🌟 天命星盤已推算生成！');
+      });
+    }
+
+    // 頂部「重新排盤」按鈕
+    if (elements.btnHeaderResetBirth) {
+      elements.btnHeaderResetBirth.addEventListener('click', function () {
+        elements.inputUserName.value = state.currentUser.userName;
+        elements.inputGender.value = state.currentUser.gender;
+        elements.inputBirthDate.value = state.currentUser.birthDateStr;
+        elements.inputBirthTime.value = state.currentUser.birthTimeStr;
+        elements.inputUnknownHour.checked = state.currentUser.isUnknownHour;
+        elements.inputCity.value = state.currentUser.cityIndex;
+        elements.birthModal.classList.add('active');
+      });
+    }
+
     // 標籤頁切換
     elements.tabBtns.forEach(btn => {
       btn.addEventListener('click', function () {
@@ -571,6 +694,7 @@
         if (targetPane) targetPane.classList.add('active');
 
         if (tab === 'grid') renderClassicalGrid();
+        if (tab === 'timeline') renderTimelineFortune();
       });
     });
 
@@ -597,7 +721,15 @@
       });
     });
 
-    // 大限滑桿
+    // 1. 大限點擊與滑動
+    elements.decadePillsRibbon.addEventListener('click', function (e) {
+      if (e.target.classList.contains('timeline-pill')) {
+        state.timeline.decadeIndex = parseInt(e.target.getAttribute('data-decade'));
+        renderTimelineFortune();
+        renderClassicalGrid();
+      }
+    });
+
     if (elements.timelineSlider) {
       elements.timelineSlider.addEventListener('input', function () {
         state.timeline.decadeIndex = parseInt(this.value);
@@ -606,51 +738,114 @@
       });
     }
 
-    // 流年年份選單
-    if (elements.timelineYearSelect) {
-      elements.timelineYearSelect.addEventListener('change', function () {
-        state.timeline.selectedYear = parseInt(this.value);
+    // 2. 流年快速年份按鈕點擊與步進
+    elements.annualYearPills.addEventListener('click', function (e) {
+      if (e.target.classList.contains('timeline-pill')) {
+        state.timeline.selectedYear = parseInt(e.target.getAttribute('data-year'));
+        renderTimelineFortune();
+        renderClassicalGrid();
+      }
+    });
+
+    if (elements.btnPrevYear) {
+      elements.btnPrevYear.addEventListener('click', function () {
+        state.timeline.selectedYear = Math.max(state.timeline.selectedYear - 1, 1920);
         renderTimelineFortune();
         renderClassicalGrid();
       });
     }
 
-    // 流月選單
-    if (elements.timelineMonthSelect) {
-      elements.timelineMonthSelect.addEventListener('change', function () {
+    if (elements.btnNextYear) {
+      elements.btnNextYear.addEventListener('click', function () {
+        state.timeline.selectedYear = Math.min(state.timeline.selectedYear + 1, 2050);
+        renderTimelineFortune();
+        renderClassicalGrid();
+      });
+    }
+
+    // 3. 小限年齡步進
+    if (elements.btnMinorPrevAge) {
+      elements.btnMinorPrevAge.addEventListener('click', function () {
+        state.timeline.selectedYear = Math.max(state.timeline.selectedYear - 1, 1920);
+        renderTimelineFortune();
+        renderClassicalGrid();
+      });
+    }
+
+    if (elements.btnMinorNextAge) {
+      elements.btnMinorNextAge.addEventListener('click', function () {
+        state.timeline.selectedYear = Math.min(state.timeline.selectedYear + 1, 2050);
+        renderTimelineFortune();
+        renderClassicalGrid();
+      });
+    }
+
+    // 4. 流月 12 個月直覺按鈕點擊 (極速即時切換)
+    elements.monthlyPillsRibbon.addEventListener('click', function (e) {
+      if (e.target.classList.contains('timeline-pill')) {
+        state.timeline.selectedMonth = parseInt(e.target.getAttribute('data-month'));
+        renderTimelineFortune();
+        renderClassicalGrid();
+      }
+    });
+
+    // 5. 流日選擇 (月份、前一日、後一日、快速日期帶、滑桿)
+    if (elements.dailyMonthSelect) {
+      elements.dailyMonthSelect.addEventListener('change', function () {
         state.timeline.selectedMonth = parseInt(this.value);
         renderTimelineFortune();
         renderClassicalGrid();
       });
     }
 
-    // 流日選單
-    if (elements.timelineDaySelect) {
-      elements.timelineDaySelect.addEventListener('change', function () {
+    if (elements.btnDailyPrevDay) {
+      elements.btnDailyPrevDay.addEventListener('click', function () {
+        state.timeline.selectedDay = Math.max(state.timeline.selectedDay - 1, 1);
+        renderTimelineFortune();
+        renderClassicalGrid();
+      });
+    }
+
+    if (elements.btnDailyNextDay) {
+      elements.btnDailyNextDay.addEventListener('click', function () {
+        state.timeline.selectedDay = Math.min(state.timeline.selectedDay + 1, 30);
+        renderTimelineFortune();
+        renderClassicalGrid();
+      });
+    }
+
+    elements.dailyQuickDaysRibbon.addEventListener('click', function (e) {
+      if (e.target.classList.contains('timeline-pill')) {
+        state.timeline.selectedDay = parseInt(e.target.getAttribute('data-day'));
+        renderTimelineFortune();
+        renderClassicalGrid();
+      }
+    });
+
+    if (elements.dailyDaySlider) {
+      elements.dailyDaySlider.addEventListener('input', function () {
         state.timeline.selectedDay = parseInt(this.value);
         renderTimelineFortune();
         renderClassicalGrid();
       });
     }
 
-    // 排盤設定彈窗
-    elements.btnOpenBirthModal.addEventListener('click', () => {
-      elements.inputUserName.value = state.currentUser.userName;
-      elements.inputGender.value = state.currentUser.gender;
-      elements.inputBirthDate.value = state.currentUser.birthDateStr;
-      elements.inputBirthTime.value = state.currentUser.birthTimeStr;
-      elements.inputUnknownHour.checked = state.currentUser.isUnknownHour;
-      elements.inputCity.value = state.currentUser.cityIndex;
-      elements.birthModal.classList.add('active');
-    });
-
+    // 排盤彈窗提交 (修改生辰)
     elements.birthModalClose.addEventListener('click', () => {
       elements.birthModal.classList.remove('active');
     });
 
+    elements.inputUserName.addEventListener('focus', function () {
+      if (this.value === '請輸入您的姓名') this.value = '';
+    });
+    elements.inputUserName.addEventListener('blur', function () {
+      if (!this.value.trim()) this.value = '請輸入您的姓名';
+    });
+
     elements.birthForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      state.currentUser.userName = elements.inputUserName.value.trim() || '命主';
+      const rawName = elements.inputUserName.value.trim();
+      state.currentUser.userName = (!rawName || rawName === '請輸入您的姓名') ? '命主' : rawName;
       state.currentUser.gender = elements.inputGender.value;
       state.currentUser.birthDateStr = elements.inputBirthDate.value;
       state.currentUser.birthTimeStr = elements.inputBirthTime.value;
@@ -658,7 +853,7 @@
       state.currentUser.cityIndex = parseInt(elements.inputCity.value) || 0;
 
       elements.birthModal.classList.remove('active');
-      recalculateChart(true); // 觸發排盤並靜默同步 Google Sheets
+      recalculateChart(true);
       showToast('🌟 命盤已精準重新運算校準完成！');
     });
 
@@ -722,7 +917,6 @@
       window.print();
     });
 
-    // 點擊遮罩外側關閉彈窗
     window.addEventListener('click', (e) => {
       if (e.target.classList.contains('modal-overlay')) {
         e.target.classList.remove('active');
@@ -734,6 +928,7 @@
   function init() {
     initCitySelects();
     setupEventListeners();
+    // 預設先計算一次備妥模型
     recalculateChart(false);
   }
 

@@ -35,8 +35,8 @@
       </div>
 
       <div class="header-actions">
-        <button class="btn btn-outline" id="btnOpenBirthModal">
-          <span>⚙️</span> 排盤設定
+        <button class="btn btn-outline" id="btnHeaderResetBirth">
+          <span>✎</span> 重新排盤
         </button>
         <button class="btn btn-primary" id="btnOpenShareModal">
           <span>📜</span> 分享報告
@@ -45,250 +45,397 @@
     </div>
   </header>
 
-  <!-- Quick User Info Bar -->
-  <section class="user-quick-bar">
-    <div class="quick-bar-content" id="userQuickInfo">
-      <!-- Generated dynamically -->
+  <!-- ======================================================== -->
+  <!-- 1. 首頁排盤生辰輸入區 (Landing Hero Card) -->
+  <!-- ======================================================== -->
+  <section class="main-container" id="landingHeroSection">
+    <div class="landing-hero-card">
+      <div class="landing-header">
+        <div class="landing-logo-badge">
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 9C10 5 7 4 6 5C5 6 6 8 8 10C6 10 3 11 3 13C3 15 6 15 9 14" stroke="#C49B3C" stroke-width="2" stroke-linecap="round"/>
+            <path d="M24 9C26 5 29 4 30 5C31 6 30 8 28 10C30 10 33 11 33 13C33 15 30 15 27 14" stroke="#C49B3C" stroke-width="2" stroke-linecap="round"/>
+            <path d="M8 17C8 12 11 11 18 11C25 11 28 12 28 17C28 23 24 28 18 28C12 28 8 23 8 17Z" fill="#F3EBDD" stroke="#34523F" stroke-width="2"/>
+            <circle cx="14" cy="18" r="2" fill="#34523F"/>
+            <circle cx="22" cy="18" r="2" fill="#34523F"/>
+            <ellipse cx="18" cy="22" rx="2.5" ry="1.5" fill="#D96138"/>
+            <path d="M16 24Q18 25.5 20 24" stroke="#34523F" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h2 class="landing-title">請輸入排盤生辰開始推算</h2>
+        <p class="landing-subtitle">遵循倪海廈先生《天紀》正宗體系・真太陽時精密天文校驗</p>
+      </div>
+
+      <form id="landingBirthForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">命主姓名</label>
+            <input type="text" id="landingInputName" class="form-control" value="請輸入您的姓名" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">性別陰陽</label>
+            <select id="landingInputGender" class="form-control">
+              <option value="乾造 (男)">乾造 (男)</option>
+              <option value="坤造 (女)">坤造 (女)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">西曆出生日期</label>
+            <input type="date" id="landingInputBirthDate" class="form-control" value="1995-10-24" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">出生時間 (時:分)</label>
+            <input type="time" id="landingInputBirthTime" class="form-control" value="14:30">
+          </div>
+        </div>
+
+        <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <input type="checkbox" id="landingInputUnknownHour">
+          <label for="landingInputUnknownHour" style="font-size:0.85rem;color:var(--ghibli-text-main);cursor:pointer;">
+            不知道確切出生時間（自動以子時起盤）
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-bottom:20px;">
+          <label class="form-label">出生地點（真太陽時精密天文校驗）</label>
+          <select id="landingInputCity" class="form-control"></select>
+        </div>
+
+        <button type="submit" class="btn-start-calc">
+          <span>🦌</span> 開始星盤推算 / 排盤 ➔
+        </button>
+      </form>
     </div>
   </section>
 
-  <!-- Navigation Tabs -->
-  <nav class="tab-navigation">
-    <div class="tabs-container">
-      <button class="tab-btn active" data-tab="metis">
-        <span>🌟</span> 現代白話解說
-      </button>
-      <button class="tab-btn" data-tab="grid">
-        <span>🏛️</span> 天圓地方盤 (4x4)
-      </button>
-      <button class="tab-btn" data-tab="timeline">
-        <span>⏳</span> 流年運勢時光軸
-      </button>
-      <button class="tab-btn" data-tab="synastry">
-        <span>💫</span> 雙人合盤默契
-      </button>
-    </div>
-  </nav>
+  <!-- ======================================================== -->
+  <!-- 2. 排盤推演結果面板 (Results Dashboard - 輸入後呈現) -->
+  <!-- ======================================================== -->
+  <div id="resultsDashboard" class="hidden-section">
 
-  <!-- Main Content Layout -->
-  <main class="main-container">
-
-    <!-- TAB 1: 現代白話 (Metis) -->
-    <section class="tab-pane active" id="tab-metis">
-      <!-- Hero Banner -->
-      <div class="ghibli-card metis-hero">
-        <span class="metis-badge">METIS 現代天命總綱</span>
-        <h2 class="metis-headline" id="metisHeadline">敢推倒重來，敢走在前頭</h2>
-        <p class="metis-subheadline" id="metisSubheadline">你適合白手起家、在變革風雲中開創，不適合安於溫水靜坐不動。</p>
+    <!-- Quick User Info Bar -->
+    <section class="user-quick-bar">
+      <div class="quick-bar-content" id="userQuickInfo">
+        <!-- Generated dynamically -->
       </div>
+    </section>
 
-      <!-- Radar & 3 Superpowers -->
-      <div class="ghibli-card">
-        <div class="card-title">
-          <span>🧭</span> 六維天命能量雷達與核心超能力
+    <!-- Navigation Tabs -->
+    <nav class="tab-navigation">
+      <div class="tabs-container">
+        <button class="tab-btn active" data-tab="metis">
+          <span>🌟</span> 現代白話解說
+        </button>
+        <button class="tab-btn" data-tab="grid">
+          <span>🏛️</span> 天圓地方盤 (4x4)
+        </button>
+        <button class="tab-btn" data-tab="timeline">
+          <span>⏳</span> 流年運勢時光軸
+        </button>
+        <button class="tab-btn" data-tab="synastry">
+          <span>💫</span> 雙人合盤默契
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content Layout -->
+    <main class="main-container">
+
+      <!-- TAB 1: 現代白話 (Metis) -->
+      <section class="tab-pane active" id="tab-metis">
+        <!-- Hero Banner -->
+        <div class="ghibli-card metis-hero">
+          <span class="metis-badge">您的現代天命總綱</span>
+          <h2 class="metis-headline" id="metisHeadline">敢推倒重來，敢走在前頭</h2>
+          <p class="metis-subheadline" id="metisSubheadline">你適合白手起家、在變革風雲中開創，不適合安於溫水靜坐不動。</p>
         </div>
-        <div class="radar-grid">
-          <div class="radar-wrapper" id="radarContainer">
-            <!-- Dynamic SVG Radar Chart -->
+
+        <!-- Radar & 3 Superpowers -->
+        <div class="ghibli-card">
+          <div class="card-title">
+            <span>🧭</span> 六維天命能量雷達與核心超能力
           </div>
-          <div class="superpower-cards">
-            <div class="power-card green">
-              <div class="power-card-title">🌟 核心優勢與超能力</div>
-              <div class="power-card-desc" id="powerCardGreen">--</div>
+          <div class="radar-grid">
+            <div class="radar-wrapper" id="radarContainer">
+              <!-- Dynamic SVG Radar Chart -->
             </div>
-            <div class="power-card purple">
-              <div class="power-card-title">🧭 情感與關係互動模式</div>
-              <div class="power-card-desc" id="powerCardPurple">--</div>
+            <div class="superpower-cards">
+              <div class="power-card green">
+                <div class="power-card-title">🌟 核心優勢與超能力</div>
+                <div class="power-card-desc" id="powerCardGreen">--</div>
+              </div>
+              <div class="power-card purple">
+                <div class="power-card-title">🧭 情感與關係互動模式</div>
+                <div class="power-card-desc" id="powerCardPurple">--</div>
+              </div>
+              <div class="power-card orange">
+                <div class="power-card-title">📈 人生蛻變與成長課題</div>
+                <div class="power-card-desc" id="powerCardOrange">--</div>
+              </div>
             </div>
-            <div class="power-card orange">
-              <div class="power-card-title">📈 人生蛻變與成長課題</div>
-              <div class="power-card-desc" id="powerCardOrange">--</div>
+          </div>
+        </div>
+
+        <!-- Dimension Selector Pills & Details -->
+        <div class="ghibli-card">
+          <div class="card-title">
+            <span>📂</span> 八大人生維度專屬深度剖析
+          </div>
+          <div class="dim-pills" id="dimPillsContainer">
+            <!-- Dimension Pills -->
+          </div>
+          <div class="dimension-detail-box" id="dimDetailBox">
+            <!-- Dynamic Dimension Detail Content -->
+          </div>
+        </div>
+
+        <!-- Master Overview & Actionable Advice -->
+        <div class="ghibli-card">
+          <div class="card-title">
+            <span>📜</span> 天命長篇剖析與修行指引
+          </div>
+          <p id="metisOverviewText" style="white-space:pre-line;font-size:0.95rem;margin-bottom:16px;line-height:1.7;"></p>
+          <div style="background:#F6F0E4;border-left:4px solid var(--ghibli-magic-brass);padding:14px;border-radius:4px;margin-bottom:14px;">
+            <h4 style="color:var(--ghibli-forest-moss);font-size:0.95rem;margin-bottom:6px;">🎯 具體落地行動方向：</h4>
+            <p id="metisActionAdvice" style="font-size:0.9rem;line-height:1.6;"></p>
+          </div>
+          <div style="text-align:center;font-weight:700;color:var(--ghibli-calcifer-orange);font-size:1.05rem;" id="metisVerdict">
+            「知世故而不世故，歷千帆仍持初心。」
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: 天圓地方盤 (Classical 4x4 Grid) -->
+      <section class="tab-pane" id="tab-grid">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:0.9rem;color:var(--ghibli-text-muted);">
+            💡 點擊任一宮位卡片即可開啟深度星曜吉凶格局解讀。
+          </div>
+        </div>
+
+        <div class="astrolabe-grid-wrapper">
+          <div class="astrolabe-grid" id="astrolabeGrid">
+            <!-- 4x4 Grid Generated Dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: 流年運勢時光軸 (Timeline Fortune) -->
+      <section class="tab-pane" id="tab-timeline">
+        <div class="timeline-controls">
+          <div class="card-title" style="margin-bottom:8px;">
+            <span>⏳</span> 時光軌道觀測維度
+          </div>
+          <div class="scope-selectors">
+            <button class="scope-btn active" data-scope="natal">本命元辰</button>
+            <button class="scope-btn" data-scope="decade">大限十年</button>
+            <button class="scope-btn" data-scope="annual">流年太歲</button>
+            <button class="scope-btn" data-scope="minor">小限微氣候</button>
+            <button class="scope-btn" data-scope="monthly">流月吉凶</button>
+            <button class="scope-btn" data-scope="daily">流日氣場</button>
+          </div>
+
+          <!-- 1. 本命提示 -->
+          <div id="timelineCtrlNatal" class="timeline-context-bar" style="display:block;">
+            <span style="font-size:0.88rem;color:var(--ghibli-forest-moss);">✨ <b>本命元辰</b>：推演終身核心人格基石與潛能天賦基因，不隨短暫年月起伏而變更。</span>
+          </div>
+
+          <!-- 2. 大限滑桿與宮位選單 -->
+          <div id="timelineCtrlDecade" class="timeline-context-bar" style="display:none;">
+            <div style="margin-bottom:8px;font-weight:700;font-size:0.88rem;color:var(--ghibli-forest-moss);">
+              選取觀測大限：
+            </div>
+            <div class="timeline-ribbon" id="decadePillsRibbon">
+              <!-- Decade Pills generated dynamically -->
+            </div>
+            <div class="timeline-slider-row" style="margin-top:12px;">
+              <span id="sliderLabel" style="font-weight:700;color:var(--ghibli-forest-moss);min-width:180px;">當前大限：--</span>
+              <input type="range" id="timelineSlider" min="0" max="11" step="1" value="0">
+            </div>
+          </div>
+
+          <!-- 3. 流年年份選單 (簡化快速點選) -->
+          <div id="timelineCtrlAnnual" class="timeline-context-bar" style="display:none;">
+            <div style="margin-bottom:8px;font-weight:700;font-size:0.88rem;color:var(--ghibli-forest-moss);">
+              觀測流年歲次（點選或步進切換）：
+            </div>
+            <div class="stepper-bar">
+              <button class="stepper-btn" id="btnPrevYear">◀ 前一年</button>
+              <div class="timeline-ribbon" id="annualYearPills">
+                <button class="timeline-pill" data-year="2024">2024 甲辰</button>
+                <button class="timeline-pill" data-year="2025">2025 乙巳</button>
+                <button class="timeline-pill active" data-year="2026">★ 2026 丙午</button>
+                <button class="timeline-pill" data-year="2027">2027 丁未</button>
+                <button class="timeline-pill" data-year="2028">2028 戊申</button>
+                <button class="timeline-pill" data-year="2029">2029 己酉</button>
+                <button class="timeline-pill" data-year="2030">2030 庚戌</button>
+              </div>
+              <button class="stepper-btn" id="btnNextYear">後一年 ▶</button>
+            </div>
+          </div>
+
+          <!-- 4. 小限歲數選單 -->
+          <div id="timelineCtrlMinor" class="timeline-context-bar" style="display:none;">
+            <div style="margin-bottom:8px;font-weight:700;font-size:0.88rem;color:var(--ghibli-forest-moss);">
+              觀測小限心境年齡：
+            </div>
+            <div class="stepper-bar">
+              <button class="stepper-btn" id="btnMinorPrevAge">◀ -1 歲</button>
+              <span class="stepper-label" id="minorAgeDisplay">實歲 31 歲</span>
+              <button class="stepper-btn" id="btnMinorNextAge">+1 歲 ▶</button>
+            </div>
+          </div>
+
+          <!-- 5. 流月選單 (12個月直覺按鈕帶) -->
+          <div id="timelineCtrlMonthly" class="timeline-context-bar" style="display:none;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-weight:700;font-size:0.88rem;color:var(--ghibli-forest-moss);">
+                點選農曆月份（自動即時重算當月氣候）：
+              </div>
+              <div style="font-size:0.82rem;color:var(--ghibli-text-muted);">
+                當前流年：<span id="monthlyCurrentYearBadge" style="font-weight:700;color:var(--ghibli-calcifer-orange);">2026 丙午年</span>
+              </div>
+            </div>
+            <div class="timeline-ribbon" id="monthlyPillsRibbon">
+              <button class="timeline-pill active" data-month="1">正月</button>
+              <button class="timeline-pill" data-month="2">二月</button>
+              <button class="timeline-pill" data-month="3">三月</button>
+              <button class="timeline-pill" data-month="4">四月</button>
+              <button class="timeline-pill" data-month="5">五月</button>
+              <button class="timeline-pill" data-month="6">六月</button>
+              <button class="timeline-pill" data-month="7">七月</button>
+              <button class="timeline-pill" data-month="8">八月</button>
+              <button class="timeline-pill" data-month="9">九月</button>
+              <button class="timeline-pill" data-month="10">十月</button>
+              <button class="timeline-pill" data-month="11">冬月</button>
+              <button class="timeline-pill" data-month="12">臘月</button>
+            </div>
+          </div>
+
+          <!-- 6. 流日選單 (月份 + 日期步進與滑桿) -->
+          <div id="timelineCtrlDaily" class="timeline-context-bar" style="display:none;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;">
+              <div>
+                <label style="font-size:0.82rem;font-weight:700;color:var(--ghibli-forest-moss);">所屬月份：</label>
+                <select id="dailyMonthSelect" class="form-control" style="width:auto;display:inline-block;padding:4px 10px;">
+                  <option value="1">正月</option><option value="2">二月</option><option value="3">三月</option>
+                  <option value="4">四月</option><option value="5">五月</option><option value="6">六月</option>
+                  <option value="7">七月</option><option value="8">八月</option><option value="9">九月</option>
+                  <option value="10">十月</option><option value="11">冬月</option><option value="12">臘月</option>
+                </select>
+              </div>
+
+              <div class="stepper-bar">
+                <button class="stepper-btn" id="btnDailyPrevDay">◀ 前一日</button>
+                <span class="stepper-label" id="dailyDayDisplay">農曆 初一 日</span>
+                <button class="stepper-btn" id="btnDailyNextDay">次一日 ▶</button>
+              </div>
+            </div>
+
+            <div class="timeline-ribbon" id="dailyQuickDaysRibbon" style="margin-bottom:10px;">
+              <button class="timeline-pill active" data-day="1">初一</button>
+              <button class="timeline-pill" data-day="5">初五</button>
+              <button class="timeline-pill" data-day="10">初十</button>
+              <button class="timeline-pill" data-day="15">十五</button>
+              <button class="timeline-pill" data-day="20">二十</button>
+              <button class="timeline-pill" data-day="25">廿五</button>
+              <button class="timeline-pill" data-day="30">三十</button>
+            </div>
+
+            <div class="timeline-slider-row">
+              <span style="font-size:0.8rem;color:var(--ghibli-text-muted);">微調日期 (1~30)：</span>
+              <input type="range" id="dailyDaySlider" min="1" max="30" step="1" value="1">
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Dimension Selector Pills & Details -->
-      <div class="ghibli-card">
-        <div class="card-title">
-          <span>📂</span> 八大人生維度專屬深度剖析
-        </div>
-        <div class="dim-pills" id="dimPillsContainer">
-          <!-- Dimension Pills -->
-        </div>
-        <div class="dimension-detail-box" id="dimDetailBox">
-          <!-- Dynamic Dimension Detail Content -->
-        </div>
-      </div>
+        <!-- Result Card -->
+        <div class="timeline-result-card">
+          <span class="focus-badge" id="timelineFocusBadge">本命元辰</span>
+          <h3 class="timeline-headline" id="timelineHeadline">--</h3>
+          <p class="timeline-overview" id="timelineOverview">--</p>
 
-      <!-- Master Overview & Actionable Advice -->
-      <div class="ghibli-card">
-        <div class="card-title">
-          <span>📜</span> 天命長篇剖析與修行指引
-        </div>
-        <p id="metisOverviewText" style="white-space:pre-line;font-size:0.95rem;margin-bottom:16px;line-height:1.7;"></p>
-        <div style="background:#F6F0E4;border-left:4px solid var(--ghibli-magic-brass);padding:14px;border-radius:4px;margin-bottom:14px;">
-          <h4 style="color:var(--ghibli-forest-moss);font-size:0.95rem;margin-bottom:6px;">🎯 具體落地行動方向：</h4>
-          <p id="metisActionAdvice" style="font-size:0.9rem;line-height:1.6;"></p>
-        </div>
-        <div style="text-align:center;font-weight:700;color:var(--ghibli-calcifer-orange);font-size:1.05rem;" id="metisVerdict">
-          「知世故而不世故，歷千帆仍持初心。」
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 2: 天圓地方盤 (Classical 4x4 Grid) -->
-    <section class="tab-pane" id="tab-grid">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="font-size:0.9rem;color:var(--ghibli-text-muted);">
-          💡 點擊任一宮位卡片即可開啟深度星曜吉凶格局解讀。
-        </div>
-      </div>
-
-      <div class="astrolabe-grid-wrapper">
-        <div class="astrolabe-grid" id="astrolabeGrid">
-          <!-- 4x4 Grid Generated Dynamically -->
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 3: 流年運勢時光軸 (Timeline Fortune) -->
-    <section class="tab-pane" id="tab-timeline">
-      <div class="timeline-controls">
-        <div class="card-title" style="margin-bottom:8px;">
-          <span>⏳</span> 時光軌道觀測維度
-        </div>
-        <div class="scope-selectors">
-          <button class="scope-btn active" data-scope="natal">本命元辰</button>
-          <button class="scope-btn" data-scope="decade">大限十年</button>
-          <button class="scope-btn" data-scope="annual">流年太歲</button>
-          <button class="scope-btn" data-scope="minor">小限微氣候</button>
-          <button class="scope-btn" data-scope="monthly">流月吉凶</button>
-          <button class="scope-btn" data-scope="daily">流日氣場</button>
-        </div>
-
-        <!-- Decade Slider Control -->
-        <div class="timeline-slider-row" id="timelineSliderRow" style="display:none;margin-top:10px;">
-          <span id="sliderLabel" style="font-weight:700;color:var(--ghibli-forest-moss);min-width:180px;">當前大限：--</span>
-          <input type="range" id="timelineSlider" min="0" max="11" step="1" value="0">
-        </div>
-
-        <!-- Annual/Monthly/Daily Selectors -->
-        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
-          <div>
-            <label style="font-size:0.8rem;color:var(--ghibli-text-muted);">觀測年份：</label>
-            <select id="timelineYearSelect" class="form-control" style="width:auto;display:inline-block;padding:4px 8px;">
-              <option value="2024">2024 甲辰年</option>
-              <option value="2025">2025 乙巳年</option>
-              <option value="2026" selected>2026 丙午年</option>
-              <option value="2027">2027 丁未年</option>
-              <option value="2028">2028 戊申年</option>
-              <option value="2029">2029 己酉年</option>
-              <option value="2030">2030 庚戌年</option>
-            </select>
+          <div class="point-group">
+            <h4>🌟 機遇與發揮亮點：</h4>
+            <ul class="dim-list" id="timelineOpportunities"></ul>
           </div>
-          <div>
-            <label style="font-size:0.8rem;color:var(--ghibli-text-muted);">農曆月份：</label>
-            <select id="timelineMonthSelect" class="form-control" style="width:auto;display:inline-block;padding:4px 8px;">
-              <option value="1">正月</option><option value="2">二月</option><option value="3">三月</option>
-              <option value="4">四月</option><option value="5">五月</option><option value="6">六月</option>
-              <option value="7">七月</option><option value="8">八月</option><option value="9">九月</option>
-              <option value="10">十月</option><option value="11">冬月</option><option value="12">臘月</option>
-            </select>
+
+          <div class="point-group">
+            <h4 style="color:var(--ghibli-calcifer-orange);">⚠️ 防範與注意事項：</h4>
+            <ul class="dim-list" id="timelinePrecautions"></ul>
           </div>
-          <div>
-            <label style="font-size:0.8rem;color:var(--ghibli-text-muted);">農曆日數：</label>
-            <select id="timelineDaySelect" class="form-control" style="width:auto;display:inline-block;padding:4px 8px;">
-              <option value="1">初一</option><option value="5">初五</option><option value="10">初十</option>
-              <option value="15" selected>十五</option><option value="20">二十</option><option value="25">廿五</option><option value="30">三十</option>
-            </select>
+
+          <div class="fawn-tip-bubble" style="margin-top:16px;">
+            <span>🦌</span>
+            <div id="timelineFawnAdvice">--</div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Result Card -->
-      <div class="timeline-result-card">
-        <span class="focus-badge" id="timelineFocusBadge">本命元辰</span>
-        <h3 class="timeline-headline" id="timelineHeadline">--</h3>
-        <p class="timeline-overview" id="timelineOverview">--</p>
-
-        <div class="point-group">
-          <h4>🌟 機遇與發揮亮點：</h4>
-          <ul class="dim-list" id="timelineOpportunities"></ul>
-        </div>
-
-        <div class="point-group">
-          <h4 style="color:var(--ghibli-calcifer-orange);">⚠️ 防範與注意事項：</h4>
-          <ul class="dim-list" id="timelinePrecautions"></ul>
-        </div>
-
-        <div class="fawn-tip-bubble" style="margin-top:16px;">
-          <span>🦌</span>
-          <div id="timelineFawnAdvice">--</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 4: 雙人合盤默契 (Synastry) -->
-    <section class="tab-pane" id="tab-synastry">
-      <div class="synastry-header-card">
-        <div class="partner-box">
-          <div class="partner-name" id="synastryNameA">命主</div>
-          <div class="partner-desc" id="synastryDescA">--</div>
-        </div>
-
-        <div style="text-align:center;">
-          <div class="synastry-score-circle">
-            <span class="synastry-score-num" id="synastryScoreNum">88</span>
-            <span class="synastry-score-label">契合指數</span>
+      <!-- TAB 4: 雙人合盤默契 (Synastry) -->
+      <section class="tab-pane" id="tab-synastry">
+        <div class="synastry-header-card">
+          <div class="partner-box">
+            <div class="partner-name" id="synastryNameA">命主</div>
+            <div class="partner-desc" id="synastryDescA">--</div>
           </div>
-          <button class="btn btn-outline" id="btnOpenPartnerModal" style="margin-top:10px;font-size:0.78rem;padding:4px 10px;">
-            設定對象資料 ✎
-          </button>
+
+          <div style="text-align:center;">
+            <div class="synastry-score-circle">
+              <span class="synastry-score-num" id="synastryScoreNum">88</span>
+              <span class="synastry-score-label">契合指數</span>
+            </div>
+            <button class="btn btn-outline" id="btnOpenPartnerModal" style="margin-top:10px;font-size:0.78rem;padding:4px 10px;">
+              設定對象資料 ✎
+            </button>
+          </div>
+
+          <div class="partner-box">
+            <div class="partner-name" id="synastryNameB">對象</div>
+            <div class="partner-desc" id="synastryDescB">--</div>
+          </div>
         </div>
 
-        <div class="partner-box">
-          <div class="partner-name" id="synastryNameB">對象</div>
-          <div class="partner-desc" id="synastryDescB">--</div>
+        <div class="ghibli-card">
+          <div style="text-align:center;margin-bottom:14px;">
+            <span class="pattern-badge" id="synastryRelBadge" style="font-size:0.85rem;padding:4px 12px;">天作之合・靈魂神隊友</span>
+            <h3 id="synastryHeadline" style="font-size:1.15rem;color:var(--ghibli-forest-moss);margin-top:6px;">「如星月同天，既懂彼此的雄心，亦憐對方的脆弱。」</h3>
+          </div>
+
+          <p id="synastryChemistry" style="font-size:0.95rem;line-height:1.6;margin-bottom:16px;color:var(--ghibli-text-main);"></p>
+
+          <div class="point-group">
+            <h4>✨ 磁場互旺與四化福澤：</h4>
+            <ul class="dim-list" id="synastryBlessings"></ul>
+          </div>
+
+          <div class="point-group">
+            <h4 style="color:var(--ghibli-calcifer-orange);">⚡ 相處磨擦與盲點防範：</h4>
+            <ul class="dim-list" id="synastryFriction"></ul>
+          </div>
+
+          <div class="fawn-tip-bubble" style="margin-top:16px;">
+            <span>🦌</span>
+            <div id="synastryFawnAdvice">--</div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="ghibli-card">
-        <div style="text-align:center;margin-bottom:14px;">
-          <span class="pattern-badge" id="synastryRelBadge" style="font-size:0.85rem;padding:4px 12px;">天作之合・靈魂神隊友</span>
-          <h3 id="synastryHeadline" style="font-size:1.15rem;color:var(--ghibli-forest-moss);margin-top:6px;">「如星月同天，既懂彼此的雄心，亦憐對方的脆弱。」</h3>
-        </div>
-
-        <p id="synastryChemistry" style="font-size:0.95rem;line-height:1.6;margin-bottom:16px;color:var(--ghibli-text-main);"></p>
-
-        <div class="point-group">
-          <h4>✨ 磁場互旺與四化福澤：</h4>
-          <ul class="dim-list" id="synastryBlessings"></ul>
-        </div>
-
-        <div class="point-group">
-          <h4 style="color:var(--ghibli-calcifer-orange);">⚡ 相處磨擦與盲點防範：</h4>
-          <ul class="dim-list" id="synastryFriction"></ul>
-        </div>
-
-        <div class="fawn-tip-bubble" style="margin-top:16px;">
-          <span>🦌</span>
-          <div id="synastryFawnAdvice">--</div>
-        </div>
-      </div>
-    </section>
-
-  </main>
+    </main>
+  </div>
 
   <!-- ======================================================== -->
   <!-- MODALS -->
   <!-- ======================================================== -->
 
-  <!-- 1. 排盤設定彈窗 -->
+  <!-- 1. 修改排盤設定彈窗 -->
   <div class="modal-overlay" id="birthModal">
     <div class="modal-sheet">
       <div class="modal-header">
-        <h3>🦌 排盤生辰設定</h3>
+        <h3>🦌 修改排盤生辰設定</h3>
         <button class="btn-close" id="birthModalClose">&times;</button>
       </div>
       <div class="modal-body">
@@ -296,7 +443,7 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">命主姓名</label>
-              <input type="text" id="inputUserName" class="form-control" value="命主" required>
+              <input type="text" id="inputUserName" class="form-control" value="請輸入您的姓名" required>
             </div>
             <div class="form-group">
               <label class="form-label">性別陰陽</label>

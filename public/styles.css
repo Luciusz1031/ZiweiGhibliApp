@@ -985,3 +985,163 @@ body {
     page-break-inside: avoid;
   }
 }
+
+/* Landing Welcome Card (首頁排盤生辰輸入) */
+.landing-hero-card {
+  max-width: 640px;
+  margin: 30px auto 40px;
+  background: var(--ghibli-cloud-white);
+  border: 2px solid var(--ghibli-magic-brass);
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: 0 10px 30px rgba(60, 40, 20, 0.1);
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.4s ease;
+}
+
+.landing-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--ghibli-forest-moss), var(--ghibli-magic-brass), var(--ghibli-calcifer-orange));
+}
+
+.landing-header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.landing-logo-badge {
+  width: 64px;
+  height: 64px;
+  background: var(--ghibli-parchment-card);
+  border: 2px solid var(--ghibli-magic-brass);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: var(--ghibli-card-shadow);
+}
+
+.landing-logo-badge svg {
+  width: 40px;
+  height: 40px;
+}
+
+.landing-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--ghibli-forest-moss);
+  margin-bottom: 6px;
+}
+
+.landing-subtitle {
+  font-size: 0.88rem;
+  color: var(--ghibli-text-muted);
+}
+
+.btn-start-calc {
+  width: 100%;
+  padding: 13px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--ghibli-forest-moss) 0%, var(--ghibli-forest-moss-light) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(52, 82, 63, 0.3);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: var(--font-serif);
+}
+
+.btn-start-calc:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(52, 82, 63, 0.4);
+}
+
+/* Timeline Simplified Ribbon & Steppers */
+.timeline-context-bar {
+  margin-top: 14px;
+  background: var(--ghibli-parchment-card);
+  border: 1px solid var(--ghibli-border-brass);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.timeline-ribbon {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.timeline-pill {
+  padding: 6px 12px;
+  border-radius: 18px;
+  background: var(--ghibli-cloud-white);
+  border: 1px solid var(--ghibli-border-brass);
+  color: var(--ghibli-text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-serif);
+}
+
+.timeline-pill:hover {
+  background: var(--ghibli-parchment-hover);
+  border-color: var(--ghibli-magic-brass);
+}
+
+.timeline-pill.active {
+  background: var(--ghibli-forest-moss);
+  color: #fff;
+  border-color: var(--ghibli-forest-moss);
+  box-shadow: 0 2px 8px rgba(52, 82, 63, 0.25);
+}
+
+.stepper-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.stepper-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: var(--ghibli-cloud-white);
+  border: 1px solid var(--ghibli-border-brass);
+  color: var(--ghibli-forest-moss);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font-serif);
+}
+
+.stepper-btn:hover {
+  background: var(--ghibli-parchment-hover);
+  border-color: var(--ghibli-magic-brass);
+}
+
+.stepper-label {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ghibli-forest-moss);
+  min-width: 140px;
+  text-align: center;
+}
+
+/* Hidden Section helper */
+.hidden-section {
+  display: none !important;
+}
