@@ -631,7 +631,7 @@
       </div>
 
       <div class="fawn-tip-bubble" style="margin-top:16px;">
-        <span>🦌</span>
+        <img src="logo.svg?v=20261026_03" alt="小鹿兒" class="fawn-bubble-icon">
         <div>小鹿兒提點：星曜如琴鍵，吉凶相生相剋。無論逢吉星或見煞曜，存正直之心，行精進之事，自能趨吉避凶！</div>
       </div>
     `;
