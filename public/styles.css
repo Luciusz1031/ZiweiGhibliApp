@@ -75,18 +75,18 @@ body {
 }
 
 .fawn-logo {
-  width: 38px;
-  height: 38px;
-  background: var(--ghibli-parchment-card);
-  border: 1.5px solid var(--ghibli-magic-brass);
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--ghibli-card-shadow);
+  box-shadow: none;
   transition: transform 0.25s ease;
-  overflow: hidden;
-  padding: 2px;
+  overflow: visible;
+  padding: 0;
 }
 
 .fawn-logo-img {
@@ -94,6 +94,7 @@ body {
   height: 100%;
   object-fit: contain;
   display: block;
+  filter: drop-shadow(0 2px 4px rgba(60, 40, 20, 0.12));
 }
 
 .brand-wrapper:hover .fawn-logo {
@@ -1051,18 +1052,18 @@ select.form-control option {
 }
 
 .landing-mascot-badge {
-  width: 56px;
-  height: 56px;
-  background: var(--ghibli-parchment-card);
-  border: 2px solid var(--ghibli-magic-brass);
-  border-radius: 50%;
+  width: 72px;
+  height: 72px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-  box-shadow: var(--ghibli-card-shadow);
-  overflow: hidden;
-  padding: 3px;
+  margin-bottom: 12px;
+  box-shadow: none;
+  overflow: visible;
+  padding: 0;
   transition: transform 0.3s ease;
 }
 
@@ -1075,6 +1076,7 @@ select.form-control option {
   height: 100%;
   object-fit: contain;
   display: block;
+  filter: drop-shadow(0 4px 10px rgba(60, 40, 20, 0.15));
 }
 
 .fawn-bubble-icon {

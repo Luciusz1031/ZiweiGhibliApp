@@ -1,56 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <defs>
-    <!-- Soft warm glow behind mascot -->
-    <radialGradient id="fawnGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FDFBF7" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#F3EBDD" stop-opacity="0.8"/>
-    </radialGradient>
-  </defs>
-
-  <!-- Background circular badge with brass border -->
-  <circle cx="50" cy="50" r="47" fill="url(#fawnGlow)" stroke="#C49B3C" stroke-width="2"/>
-
-  <!-- 1. 鹿角 (咖啡金 #B8860B) -->
-  <!-- 左鹿角主幹與分岔 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <!-- 1. 鹿角 (咖啡金 #B8860B - 遵循 Android 原版繪圖) -->
   <line x1="35" y1="35" x2="20" y2="12" stroke="#B8860B" stroke-width="6" stroke-linecap="round"/>
   <line x1="25" y1="22" x2="14" y2="22" stroke="#B8860B" stroke-width="5" stroke-linecap="round"/>
-
-  <!-- 右鹿角主幹與分岔 -->
   <line x1="65" y1="35" x2="80" y2="12" stroke="#B8860B" stroke-width="6" stroke-linecap="round"/>
   <line x1="75" y1="22" x2="86" y2="22" stroke="#B8860B" stroke-width="5" stroke-linecap="round"/>
 
-  <!-- 2. 鹿耳 (溫柔焦糖 #C48B5E，內耳粉嫩) -->
-  <g>
-    <!-- 左耳 -->
-    <ellipse cx="23" cy="38" rx="11" ry="8" fill="#C48B5E" transform="rotate(-15 23 38)"/>
-    <ellipse cx="23" cy="38" rx="6" ry="4" fill="#F8C3B8" transform="rotate(-15 23 38)"/>
-
-    <!-- 右耳 -->
-    <ellipse cx="77" cy="38" rx="11" ry="8" fill="#C48B5E" transform="rotate(15 77 38)"/>
-    <ellipse cx="77" cy="38" rx="6" ry="4" fill="#F8C3B8" transform="rotate(15 77 38)"/>
-  </g>
+  <!-- 2. 鹿耳 (焦糖色 #C48B5E 與內耳粉嫩) -->
+  <ellipse cx="23" cy="38" rx="11" ry="8" fill="#C48B5E" transform="rotate(-15 23 38)"/>
+  <ellipse cx="23" cy="38" rx="6" ry="4" fill="#F8C3B8" transform="rotate(-15 23 38)"/>
+  <ellipse cx="77" cy="38" rx="11" ry="8" fill="#C48B5E" transform="rotate(15 77 38)"/>
+  <ellipse cx="77" cy="38" rx="6" ry="4" fill="#F8C3B8" transform="rotate(15 77 38)"/>
 
   <!-- 3. 鹿頭 (溫暖駝棕色 #D2996E) -->
   <ellipse cx="50" cy="61" rx="30" ry="29" fill="#D2996E"/>
 
-  <!-- 4. 圓圓大眼睛 (帶水靈高光) -->
-  <!-- 左眼 -->
+  <!-- 4. 額頭白斑點 (小鹿斑比紋) -->
+  <circle cx="50" cy="44" r="2.2" fill="#FFFFFF" opacity="0.85"/>
+  <circle cx="44" cy="47" r="1.6" fill="#FFFFFF" opacity="0.75"/>
+  <circle cx="56" cy="47" r="1.6" fill="#FFFFFF" opacity="0.75"/>
+
+  <!-- 5. 圓圓大眼睛 (水靈高光) -->
   <circle cx="38" cy="54" r="6.5" fill="#221100"/>
   <circle cx="36" cy="52" r="2.5" fill="#FFFFFF"/>
   <circle cx="40" cy="56" r="1.0" fill="#FFFFFF" opacity="0.8"/>
 
-  <!-- 右眼 -->
   <circle cx="62" cy="54" r="6.5" fill="#221100"/>
   <circle cx="60" cy="52" r="2.5" fill="#FFFFFF"/>
   <circle cx="64" cy="56" r="1.0" fill="#FFFFFF" opacity="0.8"/>
 
-  <!-- 5. 粉紅害羞腮紅 (#FF9EA6 柔和透明度) -->
+  <!-- 6. 粉紅腮紅 (#FF9EA6 柔和半透明) -->
   <circle cx="28" cy="64" r="7" fill="#FF9EA6" fill-opacity="0.55"/>
   <circle cx="72" cy="64" r="7" fill="#FF9EA6" fill-opacity="0.55"/>
 
-  <!-- 6. 小鹿黑鼻子 (#332211) -->
+  <!-- 7. 小鹿黑鼻子 (#332211) -->
   <ellipse cx="50" cy="68.5" rx="6" ry="4.5" fill="#332211"/>
 
-  <!-- 7. 微笑嘴型 (#332211) -->
+  <!-- 8. 微笑嘴型 (#332211) -->
   <path d="M 45 74 Q 50 79 55 74" fill="none" stroke="#332211" stroke-width="3.5" stroke-linecap="round"/>
 </svg>
