@@ -784,21 +784,58 @@
 
     let coreAdvantage = '處事踏實有韌性，善於在平凡中積累不凡，抗風險能力與耐力出類拔萃。';
     if (majorNames.includes('破軍') || majorNames.includes('七殺')) {
-      coreAdvantage = '你膽子大、有執行魄力，開新路不畏艱難，挫敗之後能以驚人速度滿血復活。';
+      coreAdvantage = '你膽子大、有執行魄力，開新路不畏艱難，挫敗之後能以驚人速度滿血復活，天生具備開拓大將的氣度。';
     } else if (majorNames.includes('紫微') || majorNames.includes('天府')) {
-      coreAdvantage = '你有大局觀與領導協調能力，面對混亂場面能沉著冷靜，天然能贏得他人信賴。';
+      coreAdvantage = '你有大局觀與宏觀統籌力，面對複雜混亂場面能沉著定奪，天生能聚攏人心並贏得他人極高信任。';
     } else if (majorNames.includes('天機') || majorNames.includes('巨門')) {
-      coreAdvantage = '邏輯分析能力極強，能一眼洞察事物本質與漏洞，靠智慧與策略克敵制勝。';
+      coreAdvantage = '你的邏輯分析與洞察力出類拔萃，能一眼看透事物本質與盲點漏洞，長於靠智謀與專業策略出奇制勝。';
+    } else if (majorNames.includes('太陽') || majorNames.includes('天梁')) {
+      coreAdvantage = '你胸懷坦蕩、富有強烈的正義感與庇蔭擔當，具備卓越的公眾號召力與利他精神，越是承擔重任越顯光芒。';
+    } else if (majorNames.includes('武曲') || majorNames.includes('太陰')) {
+      coreAdvantage = '你對商業價值與資源積累具備極高敏銳度，做事嚴謹務實、講究實質成效，耐力極佳，是白手成家的典範。';
+    } else if (majorNames.includes('貪狼') || majorNames.includes('廉貞')) {
+      coreAdvantage = '你思維敏捷靈動、極具魅力與資源整合天賦，善於在變局中捕捉先機，涉獵廣泛，充滿無限進化潛力。';
     }
 
-    const relationshipPattern = '對待人際要麼愛恨分明、敢擔責任；一旦認可對方，護起人來拼盡全力，絕不拖泥帶水。';
-    const growthChallenge = '衝勁足但有時定力稍缺，折騰時需要朝著明確長線目標聚焦收尾，格局方能真正成形。';
+    const marMajorNames = marriagePalace.stars.filter(s => s.category === 'major').map(s => s.name);
+    let relationshipPattern = '在親密關係中重視三觀默契與生活平淡真實。以誠相待、守望相助，追求細水長流的相濡以沫。';
+    if (marMajorNames.some(s => ['天府', '紫微', '天梁'].includes(s))) {
+      relationshipPattern = '重視伴侶的人品高度與精神擔當。比起海誓山盟，更需要能在人生路上相互敬重、彼此托底的良師益友型伴侶。';
+    } else if (marMajorNames.some(s => ['七殺', '破軍', '貪狼', '廉貞'].includes(s))) {
+      relationshipPattern = '情感熱烈濃烈、敢愛敢恨。渴望充滿激情與共同探索火花的靈魂伴侶，討厭猜忌與沉悶敷衍，愛得純粹而有擔當。';
+    } else if (marMajorNames.some(s => ['天同', '太陰', '天機'].includes(s))) {
+      relationshipPattern = '心思細膩溫柔，重精神共鳴與日常溫馨儀式感。渴望被用心理解與溫柔呵護，是能為家庭構築溫暖港灣的長情之人。';
+    } else if (marMajorNames.some(s => ['太陽', '巨門'].includes(s))) {
+      relationshipPattern = '崇尚真實坦蕩、無話不談的溝通模式。遇到分歧更願開誠佈公把話說開，最珍視彼此間毫無保留的信任與陽光坦誠。';
+    }
+
+    const hasJiInLifeOrCareer = lifePalace.stars.some(s => s.transformation === '忌') || careerPalace.stars.some(s => s.transformation === '忌');
+    const hasFierceInLife = lifePalace.stars.some(s => s.category === 'fierce');
+    let growthChallenge = '穩健有餘但偶顯保守，有時需多一點冒險與爭取機會的勇氣，主動跨出舒適圈往往能迎來意想不到的飛躍。';
+    if (hasJiInLifeOrCareer) {
+      growthChallenge = '容易對自我要求過苛而陷入追求完美的內耗。學會接納不完美、把關注點放在過程而非一時得失，方能卸下包袱海闊天空。';
+    } else if (hasFierceInLife || majorNames.some(s => ['七殺', '破軍'].includes(s))) {
+      growthChallenge = '衝勁十足但偶爾缺乏耐心，容易在關鍵收尾期心浮氣躁。修煉定力、學會慢下來深耕一個目標，格局方能真正大成。';
+    } else if (majorNames.some(s => ['天機', '巨門', '太陰'].includes(s))) {
+      growthChallenge = '思考過多時容易陷入思慮躊躇與自我懷疑。克服拖延的最佳解藥就是「立即行動」，在實踐中邊做邊修正。';
+    } else if (majorNames.some(s => ['紫微', '武曲', '天府'].includes(s))) {
+      growthChallenge = '自尊心強、性格剛烈，容易在逆境時一個人死扛。學會適度示弱、主動借力與團隊協同，能讓你的成就事半功倍。';
+    }
 
     const starsStr = majorNames.length > 0 ? majorNames.join('、') : '命無正曜借對宮';
     const detailedOverview = `你天生是個具有自我主見與求變意識的人。對老規矩往往有著本能的審視與反思，當別人在按部就班時，你的大腦已經在思考未來的破局點。你的骨子裡有種不服輸的韌勁，在壓力面前往往能爆發出驚人潛力。性格剛正、不喜阿諛奉承，比起表面功夫更注重實質成果與心安理得。\n\n命宮由 ${starsStr} 坐鎮，結合 ${chart.elementBureau.name} 的五行氣場，賦予了你獨特的人生節奏。在年少或起步階段，難免經歷一番摸索與考驗，甚至走過一些看似彎路的修煉；但每一次的推倒重來，都在為你提煉出更加堅固的人生底層邏輯。`;
 
     const actionableAdvice = '建議你主動跳出舒適圈，靠一門不可替代的專業技術或核心手藝向外闖蕩，這才是你積累深厚籌碼的最佳路徑。做事要有長線思維，認準一個領域至少精雕細琢三年，切忌頻繁換道。把決定權握在自己手裡，遇大事沉得住氣，你的輝煌期必將隨歲月沉澱而燦然大成！';
-    const oneSentenceVerdict = '「知世故而不世故，歷千帆仍持初心；敢於破局重來者，終將自成天地。」';
+    let oneSentenceVerdict = '「知世故而不世故，歷千帆仍持初心；敢於破局重來者，終將自成天地。」';
+    if (majorNames.some(s => ['七殺', '破軍', '貪狼'].includes(s))) {
+      oneSentenceVerdict = '「橫刀直面千重浪，敢破敢立自成峰；逆境不過磨刀石，披荊斬棘定乾坤。」';
+    } else if (majorNames.some(s => ['紫微', '天府', '武曲', '天相'].includes(s))) {
+      oneSentenceVerdict = '「胸懷丘壑掌乾坤，沉穩如山聚瑞雲；知人善任施宏略，大器晚成萬里晴。」';
+    } else if (majorNames.some(s => ['天機', '太陰', '天同', '天梁'].includes(s))) {
+      oneSentenceVerdict = '「心若冰清映千江，隨風潤物意悠長；守得雲開見明月，細水長流福壽昌。」';
+    } else if (majorNames.some(s => ['太陽', '巨門'].includes(s))) {
+      oneSentenceVerdict = '「光明磊落照大千，直抒胸臆散雲煙；善念廣播結良緣，德厚流光自無邊。」';
+    }
 
     function formatStars(p) {
       const list = p.stars.filter(s => s.category === 'major').map(s => `${s.name}${s.brightness ? `[${s.brightness}]` : ''}`);
