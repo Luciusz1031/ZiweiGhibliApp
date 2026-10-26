@@ -75,10 +75,10 @@ body {
 }
 
 .fawn-logo {
-  width: 44px;
-  height: 44px;
+  width: 34px;
+  height: 34px;
   background: var(--ghibli-parchment-card);
-  border: 2px solid var(--ghibli-magic-brass);
+  border: 1.5px solid var(--ghibli-magic-brass);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -92,8 +92,8 @@ body {
 }
 
 .fawn-logo svg {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
 }
 
 .brand-text h1 {
@@ -919,14 +919,42 @@ body {
 
 .form-control {
   width: 100%;
-  padding: 9px 12px;
+  padding: 10px 14px;
   border: 1px solid var(--ghibli-border-brass);
   border-radius: 8px;
   background: var(--ghibli-cloud-white);
   font-family: var(--font-serif);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--ghibli-text-main);
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+select.form-control {
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2334523F' d='M1.41 0L6 4.58L10.59 0L12 1.41l-6 6l-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
+  padding-right: 36px;
+}
+
+select.form-control optgroup {
+  font-weight: 700;
+  color: var(--ghibli-forest-moss);
+  background: var(--ghibli-parchment-card);
+  padding: 4px 0;
+}
+
+select.form-control option {
+  font-weight: normal;
+  color: var(--ghibli-text-main);
+  background: #ffffff;
+  padding: 6px 10px;
 }
 
 .form-control:focus {
@@ -1013,22 +1041,23 @@ body {
   margin-bottom: 22px;
 }
 
-.landing-logo-badge {
-  width: 64px;
-  height: 64px;
+.landing-mini-badge {
+  width: 36px;
+  height: 36px;
   background: var(--ghibli-parchment-card);
-  border: 2px solid var(--ghibli-magic-brass);
+  border: 1.5px solid var(--ghibli-magic-brass);
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  font-size: 1.25rem;
   box-shadow: var(--ghibli-card-shadow);
 }
 
-.landing-logo-badge svg {
-  width: 40px;
-  height: 40px;
+.landing-mini-badge svg {
+  width: 22px;
+  height: 22px;
 }
 
 .landing-title {

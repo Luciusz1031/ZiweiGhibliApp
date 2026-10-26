@@ -53,6 +53,7 @@
 
     // Top Bar
     brandHome: document.getElementById('brandHome'),
+    headerActions: document.getElementById('headerActions'),
     userQuickInfo: document.getElementById('userQuickInfo'),
     btnHeaderResetBirth: document.getElementById('btnHeaderResetBirth'),
     btnOpenShareModal: document.getElementById('btnOpenShareModal'),
@@ -169,10 +170,26 @@
   // MARK: - 初始化城市選單
   function initCitySelects() {
     const cities = ZiweiEngine.PRESET_CITIES;
-    const opts = cities.map((c, i) => `<option value="${i}">${c.region} - ${c.name}</option>`).join('');
-    if (elements.landingInputCity) elements.landingInputCity.innerHTML = opts;
-    if (elements.inputCity) elements.inputCity.innerHTML = opts;
-    if (elements.inputPartnerCity) elements.inputPartnerCity.innerHTML = opts;
+    const fallbackOpts = cities.map((c, i) => `<option value="${i}">${c.region} - ${c.name}</option>`).join('');
+
+    if (elements.landingInputCity) {
+      if (!elements.landingInputCity.options || elements.landingInputCity.options.length === 0) {
+        elements.landingInputCity.innerHTML = fallbackOpts;
+      }
+      elements.landingInputCity.value = String(state.currentUser.cityIndex);
+    }
+    if (elements.inputCity) {
+      if (!elements.inputCity.options || elements.inputCity.options.length === 0) {
+        elements.inputCity.innerHTML = fallbackOpts;
+      }
+      elements.inputCity.value = String(state.currentUser.cityIndex);
+    }
+    if (elements.inputPartnerCity) {
+      if (!elements.inputPartnerCity.options || elements.inputPartnerCity.options.length === 0) {
+        elements.inputPartnerCity.innerHTML = fallbackOpts;
+      }
+      elements.inputPartnerCity.value = String(state.partnerUser.cityIndex);
+    }
   }
 
   // MARK: - 排盤計算觸發 (Recalculate Chart)
@@ -646,6 +663,11 @@
         }
       });
 
+      // 出生地點選單即時同步
+      elements.landingInputCity.addEventListener('change', function () {
+        state.currentUser.cityIndex = parseInt(this.value) || 0;
+      });
+
       elements.landingBirthForm.addEventListener('submit', function (e) {
         e.preventDefault();
         const rawName = elements.landingInputName.value.trim();
@@ -662,6 +684,7 @@
         // 平滑切換視圖：隱藏首頁輸入卡片，顯示排盤結果看板
         elements.landingHeroSection.style.display = 'none';
         elements.resultsDashboard.classList.remove('hidden-section');
+        if (elements.headerActions) elements.headerActions.style.display = 'flex';
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         showToast('🌟 天命星盤已推算生成！');
@@ -928,8 +951,14 @@
   function init() {
     initCitySelects();
     setupEventListeners();
-    // 預設先計算一次備妥模型
+    // 預先在內存中建立基準模型
     recalculateChart(false);
+    // 初始狀態：在使用者按下「開始推算」前，結果看板與頂部操作按鈕保持隱藏
+    if (!state.hasSubmittedBirth) {
+      if (elements.landingHeroSection) elements.landingHeroSection.style.display = 'block';
+      if (elements.resultsDashboard) elements.resultsDashboard.classList.add('hidden-section');
+      if (elements.headerActions) elements.headerActions.style.display = 'none';
+    }
   }
 
   if (document.readyState === 'loading') {
