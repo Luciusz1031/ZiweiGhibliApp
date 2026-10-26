@@ -49,27 +49,42 @@
     6: { name: '火六局', number: 6 }
   };
 
-  const PRESET_CITIES = [
+    const PRESET_CITIES = [
+    // 台灣地區 22 縣市完整涵蓋 (依地理順序排列：北中南東及離島)
     { name: '台北市', region: '台灣', lon: 121.5654, lat: 25.0330, stdLon: 120.0, tz: 'Asia/Taipei' },
     { name: '新北市', region: '台灣', lon: 121.4627, lat: 25.0117, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '基隆市', region: '台灣', lon: 121.7462, lat: 25.1276, stdLon: 120.0, tz: 'Asia/Taipei' },
     { name: '桃園市', region: '台灣', lon: 121.3009, lat: 24.9936, stdLon: 120.0, tz: 'Asia/Taipei' },
     { name: '新竹市', region: '台灣', lon: 120.9675, lat: 24.8138, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '新竹縣', region: '台灣', lon: 121.0180, lat: 24.8383, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '苗栗縣', region: '台灣', lon: 120.8208, lat: 24.5601, stdLon: 120.0, tz: 'Asia/Taipei' },
     { name: '台中市', region: '台灣', lon: 120.6736, lat: 24.1477, stdLon: 120.0, tz: 'Asia/Taipei' },
-    { name: '彰化市', region: '台灣', lon: 120.5422, lat: 24.0815, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '彰化縣', region: '台灣', lon: 120.5422, lat: 24.0815, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '南投縣', region: '台灣', lon: 120.6869, lat: 23.9099, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '雲林縣', region: '台灣', lon: 120.5435, lat: 23.7092, stdLon: 120.0, tz: 'Asia/Taipei' },
     { name: '嘉義市', region: '台灣', lon: 120.4491, lat: 23.4800, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '嘉義縣', region: '台灣', lon: 120.2930, lat: 23.4518, stdLon: 120.0, tz: 'Asia/Taipei' },
     { name: '台南市', region: '台灣', lon: 120.1979, lat: 22.9997, stdLon: 120.0, tz: 'Asia/Taipei' },
     { name: '高雄市', region: '台灣', lon: 120.3120, lat: 22.6273, stdLon: 120.0, tz: 'Asia/Taipei' },
-    { name: '基隆市', region: '台灣', lon: 121.7462, lat: 25.1276, stdLon: 120.0, tz: 'Asia/Taipei' },
-    { name: '宜蘭市', region: '台灣', lon: 121.7533, lat: 24.7570, stdLon: 120.0, tz: 'Asia/Taipei' },
-    { name: '花蓮市', region: '台灣', lon: 121.6068, lat: 23.9871, stdLon: 120.0, tz: 'Asia/Taipei' },
-    { name: '台東市', region: '台灣', lon: 121.1444, lat: 22.7583, stdLon: 120.0, tz: 'Asia/Taipei' },
-    { name: '澎湖馬公', region: '台灣', lon: 119.5794, lat: 23.5658, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '屏東縣', region: '台灣', lon: 120.4880, lat: 22.6761, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '宜蘭縣', region: '台灣', lon: 121.7533, lat: 24.7570, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '花蓮縣', region: '台灣', lon: 121.6068, lat: 23.9871, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '台東縣', region: '台灣', lon: 121.1444, lat: 22.7583, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '澎湖縣', region: '台灣', lon: 119.5794, lat: 23.5658, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '金門縣', region: '台灣', lon: 118.3226, lat: 24.4363, stdLon: 120.0, tz: 'Asia/Taipei' },
+    { name: '連江馬祖', region: '台灣', lon: 119.9288, lat: 26.1558, stdLon: 120.0, tz: 'Asia/Taipei' },
+
+    // 港澳地區
     { name: '香港', region: '港澳', lon: 114.1694, lat: 22.3193, stdLon: 120.0, tz: 'Asia/Hong_Kong' },
     { name: '澳門', region: '港澳', lon: 113.5439, lat: 22.1987, stdLon: 120.0, tz: 'Asia/Macau' },
+
+    // 大陸地區主要代表城市
     { name: '北京', region: '大陸', lon: 116.4074, lat: 39.9042, stdLon: 120.0, tz: 'Asia/Shanghai' },
     { name: '上海', region: '大陸', lon: 121.4737, lat: 31.2304, stdLon: 120.0, tz: 'Asia/Shanghai' },
     { name: '廣州', region: '大陸', lon: 113.2644, lat: 23.1291, stdLon: 120.0, tz: 'Asia/Shanghai' },
     { name: '深圳', region: '大陸', lon: 114.0579, lat: 22.5431, stdLon: 120.0, tz: 'Asia/Shanghai' },
+
+    // 海外主要代表城市
     { name: '新加坡', region: '海外', lon: 103.8198, lat: 1.3521, stdLon: 120.0, tz: 'Asia/Singapore' },
     { name: '吉隆坡', region: '海外', lon: 101.6869, lat: 3.1390, stdLon: 120.0, tz: 'Asia/Kuala_Lumpur' },
     { name: '東京', region: '海外', lon: 139.6917, lat: 35.6895, stdLon: 135.0, tz: 'Asia/Tokyo' },

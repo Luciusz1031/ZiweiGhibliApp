@@ -22,22 +22,30 @@ public struct CityLocation: Identifiable, Codable, Hashable {
 public struct CityDatabase {
     public static let defaultCity = CityLocation(name: "台北市", region: "台灣", longitude: 121.5654, latitude: 25.0330)
     
-    public static let presetCities: [CityLocation] = [
-        // 台灣地區
+        public static let presetCities: [CityLocation] = [
+        // 台灣地區 22 縣市完整涵蓋
         CityLocation(name: "台北市", region: "台灣", longitude: 121.5654, latitude: 25.0330),
         CityLocation(name: "新北市", region: "台灣", longitude: 121.4627, latitude: 25.0117),
+        CityLocation(name: "基隆市", region: "台灣", longitude: 121.7462, latitude: 25.1276),
         CityLocation(name: "桃園市", region: "台灣", longitude: 121.3009, latitude: 24.9936),
         CityLocation(name: "新竹市", region: "台灣", longitude: 120.9675, latitude: 24.8138),
+        CityLocation(name: "新竹縣", region: "台灣", longitude: 121.0180, latitude: 24.8383),
+        CityLocation(name: "苗栗縣", region: "台灣", longitude: 120.8208, latitude: 24.5601),
         CityLocation(name: "台中市", region: "台灣", longitude: 120.6736, latitude: 24.1477),
-        CityLocation(name: "彰化市", region: "台灣", longitude: 120.5422, latitude: 24.0815),
+        CityLocation(name: "彰化縣", region: "台灣", longitude: 120.5422, latitude: 24.0815),
+        CityLocation(name: "南投縣", region: "台灣", longitude: 120.6869, latitude: 23.9099),
+        CityLocation(name: "雲林縣", region: "台灣", longitude: 120.5435, latitude: 23.7092),
         CityLocation(name: "嘉義市", region: "台灣", longitude: 120.4491, latitude: 23.4800),
+        CityLocation(name: "嘉義縣", region: "台灣", longitude: 120.2930, latitude: 23.4518),
         CityLocation(name: "台南市", region: "台灣", longitude: 120.1979, latitude: 22.9997),
         CityLocation(name: "高雄市", region: "台灣", longitude: 120.3120, latitude: 22.6273),
-        CityLocation(name: "基隆市", region: "台灣", longitude: 121.7462, latitude: 25.1276),
-        CityLocation(name: "宜蘭市", region: "台灣", longitude: 121.7533, latitude: 24.7570),
-        CityLocation(name: "花蓮市", region: "台灣", longitude: 121.6068, latitude: 23.9871),
-        CityLocation(name: "台東市", region: "台灣", longitude: 121.1444, latitude: 22.7583),
-        CityLocation(name: "澎湖馬公", region: "台灣", longitude: 119.5794, latitude: 23.5658),
+        CityLocation(name: "屏東縣", region: "台灣", longitude: 120.4880, latitude: 22.6761),
+        CityLocation(name: "宜蘭縣", region: "台灣", longitude: 121.7533, latitude: 24.7570),
+        CityLocation(name: "花蓮縣", region: "台灣", longitude: 121.6068, latitude: 23.9871),
+        CityLocation(name: "台東縣", region: "台灣", longitude: 121.1444, latitude: 22.7583),
+        CityLocation(name: "澎湖縣", region: "台灣", longitude: 119.5794, latitude: 23.5658),
+        CityLocation(name: "金門縣", region: "台灣", longitude: 118.3226, latitude: 24.4363),
+        CityLocation(name: "連江馬祖", region: "台灣", longitude: 119.9288, latitude: 26.1558),
         
         // 港澳
         CityLocation(name: "香港", region: "港澳", longitude: 114.1694, latitude: 22.3193, standardLongitude: 120.0, timeZoneIdentifier: "Asia/Hong_Kong"),
