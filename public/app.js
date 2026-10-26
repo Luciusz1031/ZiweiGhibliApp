@@ -125,6 +125,14 @@
     synastryDescB: document.getElementById('synastryDescB'),
     synastryScoreNum: document.getElementById('synastryScoreNum'),
     synastryRelBadge: document.getElementById('synastryRelBadge'),
+    synastryScoreLove: document.getElementById('synastryScoreLove'),
+    synastryBarLove: document.getElementById('synastryBarLove'),
+    synastryScoreValue: document.getElementById('synastryScoreValue'),
+    synastryBarValue: document.getElementById('synastryBarValue'),
+    synastryScoreWealth: document.getElementById('synastryScoreWealth'),
+    synastryBarWealth: document.getElementById('synastryBarWealth'),
+    synastryScoreComm: document.getElementById('synastryScoreComm'),
+    synastryBarComm: document.getElementById('synastryBarComm'),
     synastryHeadline: document.getElementById('synastryHeadline'),
     synastryChemistry: document.getElementById('synastryChemistry'),
     synastryBlessings: document.getElementById('synastryBlessings'),
@@ -581,6 +589,23 @@
 
     elements.synastryScoreNum.textContent = syn.overallScore;
     elements.synastryRelBadge.textContent = syn.relationshipType;
+
+    if (elements.synastryScoreLove) {
+      elements.synastryScoreLove.textContent = `${syn.loveScore} 分`;
+      elements.synastryBarLove.style.width = `${syn.loveScore}%`;
+    }
+    if (elements.synastryScoreValue) {
+      elements.synastryScoreValue.textContent = `${syn.valueScore} 分`;
+      elements.synastryBarValue.style.width = `${syn.valueScore}%`;
+    }
+    if (elements.synastryScoreWealth) {
+      elements.synastryScoreWealth.textContent = `${syn.wealthScore} 分`;
+      elements.synastryBarWealth.style.width = `${syn.wealthScore}%`;
+    }
+    if (elements.synastryScoreComm) {
+      elements.synastryScoreComm.textContent = `${syn.commScore} 分`;
+      elements.synastryBarComm.style.width = `${syn.commScore}%`;
+    }
     elements.synastryHeadline.textContent = syn.headline;
     elements.synastryChemistry.textContent = syn.starChemistry;
 
@@ -718,6 +743,7 @@
 
         if (tab === 'grid') renderClassicalGrid();
         if (tab === 'timeline') renderTimelineFortune();
+        if (tab === 'synastry') renderSynastryView();
       });
     });
 

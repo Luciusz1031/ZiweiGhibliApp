@@ -1227,60 +1227,265 @@
     };
   }
 
-  // MARK: - 雙人紫微合盤分析 (Synastry Engine)
-  function analyzeSynastry(personA, personB) {
-    const palaceA = personA.palaces[personA.lifeBranchIndex];
-    const palaceB = personB.palaces[personB.lifeBranchIndex];
+  // MARK: - 雙人紫微合盤分析 (Advanced Synastry Engine)
+  function formatSynastryPalaceName(pal) {
+    if (!pal) return '';
+    const n = pal.name;
+    return n.endsWith('宮') ? n : `${n}宮`;
+  }
 
-    const starsA = palaceA.stars.filter(s => s.category === 'major').map(s => s.name);
-    const starsB = palaceB.stars.filter(s => s.category === 'major').map(s => s.name);
+  function getStarArchetype(majors) {
+    const set = new Set(majors);
+    if (['七殺', '破軍', '貪狼'].some(s => set.has(s))) return 'SHA_PO_LANG';
+    if (['紫微', '天府', '武曲', '天相', '廉貞'].some(s => set.has(s))) return 'ZI_FU_WU_XIANG';
+    if (['天機', '太陰', '天同', '天梁'].some(s => set.has(s))) return 'JI_YUE_TONG_LIANG';
+    if (['太陽', '巨門'].some(s => set.has(s))) return 'JU_RI';
+    return 'KONG_GONG';
+  }
+
+  function analyzeSynastry(personA, personB) {
+    const palLifeA = personA.palaces[personA.lifeBranchIndex];
+    const palLifeB = personB.palaces[personB.lifeBranchIndex];
+    const palMarriageA = personA.palaces.find(p => p.name === '夫妻');
+    const palMarriageB = personB.palaces.find(p => p.name === '夫妻');
+
+    const majorsA = palLifeA.stars.filter(s => s.category === 'major').map(s => s.name);
+    const majorsB = palLifeB.stars.filter(s => s.category === 'major').map(s => s.name);
+    const majorsMarA = palMarriageA ? palMarriageA.stars.filter(s => s.category === 'major').map(s => s.name) : [];
+    const majorsMarB = palMarriageB ? palMarriageB.stars.filter(s => s.category === 'major').map(s => s.name) : [];
 
     const nameA = personA.userName || '命主';
     const nameB = personB.userName || '對象';
 
-    const starsStrA = starsA.length > 0 ? starsA.join('・') : '借對宮星曜';
-    const starsStrB = starsB.length > 0 ? starsB.join('・') : '借對宮星曜';
-    const allStars = new Set([...starsA, ...starsB]);
+    const starsStrA = majorsA.length > 0 ? majorsA.join('・') : '借對宮星曜';
+    const starsStrB = majorsB.length > 0 ? majorsB.join('・') : '借對宮星曜';
 
-    let baseScore = 85;
-    let chemistry = `「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 命宮磁場互相呼應。雙方在價值觀與生活步調上能相互啟發，具備良好的合作與相處潛質。`;
+    const archA = getStarArchetype(majorsA);
+    const archB = getStarArchetype(majorsB);
+
+    // 1. 星系配對解析
     let relType = '志同道合・相輔相成良伴';
     let headline = '「互為鏡鑑，各展所長；在彼此的世界裡成為最好的隊友。」';
+    let chemistry = '';
+    let baseScore = 85;
 
-    if ((allStars.has('紫微') && allStars.has('天府')) || (allStars.has('太陽') && allStars.has('太陰'))) {
-      baseScore = 93;
-      chemistry = `【尊星合璧・日月同天】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 的命宮磁場極度相得益彰！一方如陽光般溫暖開拓，另一方如月光般深沉包容。在一起不僅有強烈的心靈共鳴，在重要人生關卡更能彼此托底推進！`;
-      relType = '天作之合・靈魂神隊友';
-      headline = '「如星月同天，既懂彼此的雄心，亦憐對方的脆弱。」';
-    } else if ((allStars.has('七殺') || allStars.has('破軍')) && (allStars.has('天相') || allStars.has('天同') || allStars.has('天梁'))) {
-      baseScore = 89;
-      chemistry = `【剛柔並濟・攻守兼備】「${nameA}」(${starsStrA}) 遇上「${nameB}」(${starsStrB})，一方具備強悍的決斷力與衝鋒勇氣，另一方則情商卓越、細心穩重。一人向前開疆拓土，一人在後穩固後方，是極具實戰爆發力的黃金搭檔！`;
-      relType = '剛柔互補・事業王牌搭檔';
-      headline = '「你敢勇往直前破浪，我能穩掌羅盤護航。」';
-    } else if ((allStars.has('貪狼') || allStars.has('廉貞')) && (allStars.has('天機') || allStars.has('巨門'))) {
-      baseScore = 87;
-      chemistry = `【靈感共振・才華碰撞】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 在一起生活永不無聊！雙方思維敏捷、好奇心旺盛，思想交流常有奇思妙想。相處就像無話不談的知己密友，情趣與熱情源源不絕。`;
-      relType = '靈犀相通・生活智庫玩家';
-      headline = '「靈魂有共鳴，言語有溫度，相處百看不厭。」';
+    const pairKey = [archA, archB].sort().join('+');
+
+    switch (pairKey) {
+      case 'JI_YUE_TONG_LIANG+SHA_PO_LANG':
+        relType = '剛柔互補・天作神隊友';
+        headline = '「你敢策馬奔馳戰風浪，我能靜心溫湯守歸舟。」';
+        baseScore = 93;
+        chemistry = `【剛柔並濟・動靜相宜】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 是紫微斗數中極具互補魅力的黃金組合！一方果決敢為、充滿開拓熱情與爆發力，另一方心思細膩、具備極佳的同理心與協調包容力。一人在前方開闢天地，一人在後方固本培元，彼此能迅速成為不可或缺的心靈港灣與實力後盾。`;
+        break;
+      case 'SHA_PO_LANG+ZI_FU_WU_XIANG':
+        relType = '氣吞山河・事業帝王盟友';
+        headline = '「強強相惜聚風雲，並肩共譜宏圖章。」';
+        baseScore = 91;
+        chemistry = `【強強聯手・開疆拓土】「${nameA}」(${starsStrA}) 遇上「${nameB}」(${starsStrB})，兩人皆具備強大主見與宏大格局！雙方自尊自重、行動果決，在事業或人生方向上有著不服輸的堅韌氣魄。只要目標一致，便能發揮出「一加一大於二」的超強爆發力，成為無論在商場或生活都無堅不摧的王牌拍檔。`;
+        break;
+      case 'SHA_PO_LANG+SHA_PO_LANG':
+        relType = '烈火奔騰・冒險開拓拍檔';
+        headline = '「天生敢闖不信命，熱烈燃燒共闖天下。」';
+        baseScore = 87;
+        chemistry = `【熱情迸發・大開大闔】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 皆屬開創型星宿，相處節奏明快、充滿激情與生命力！兩人都不喜墨守成規，在一起生活從不無聊，共同探索未知世界火花四濺。但因雙方脾氣皆直率急躁，需學會放慢腳步體會彼此的溫柔。`;
+        break;
+      case 'JU_RI+SHA_PO_LANG':
+        relType = '雷厲風行・真性情先鋒';
+        headline = '「情真意切無隱瞞，大步流星向前行。」';
+        baseScore = 89;
+        chemistry = `【直抒胸臆・光芒萬丈】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 的組合性格爽朗真誠，毫無矯揉造作。太陽巨門的熱情表達能迅速激發殺破狼的行動力，兩人溝通直來直往，遇問題迅速解決，是極富感染力與執行力的熱血拍檔！`;
+        break;
+      case 'JI_YUE_TONG_LIANG+ZI_FU_WU_XIANG':
+        relType = '琴瑟和鳴・典範知心夫妻';
+        headline = '「掌舵者胸懷天地，守護者溫婉如水。」';
+        baseScore = 95;
+        chemistry = `【尊榮相佐・內聖外王】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 是古典紫微斗數中極為推崇的良配！一方威儀穩重、格局深遠，長於大局掌舵與戰略規劃；另一方溫文隨和、情緒穩定、體貼入微。兩人相處自帶尊崇與默契，生活步調張弛有度，家庭與事業皆能蒸蒸日上。`;
+        break;
+      case 'ZI_FU_WU_XIANG+ZI_FU_WU_XIANG':
+        relType = '雙璧生輝・相敬如賓同盟';
+        headline = '「互敬如賓重信諾，雙璧生輝自風華。」';
+        baseScore = 90;
+        chemistry = `【雙龍出海・尊崇自重】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 皆自帶高貴風骨與強烈責任心。彼此相敬如賓、深明大義，深知對方的抱負與堅持，從不在細節瑣事上互相牽絆，是彼此事業與人生最體面的後盾。`;
+        break;
+      case 'JU_RI+ZI_FU_WU_XIANG':
+        relType = '內外兼備・經緯天下良伴';
+        headline = '「聲名遠播開天地，深沉持重穩乾坤。」';
+        baseScore = 92;
+        chemistry = `【揚長避短・名實兼備】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 相遇，一方擅長對外傳播溝通、建立名望與公眾影響力，一方深沉穩健、擅長資源佈局與內務掌控。兩人分工精妙，內外兼修，能建立極高社會聲望與穩定基業。`;
+        break;
+      case 'JI_YUE_TONG_LIANG+JI_YUE_TONG_LIANG':
+        relType = '歲月靜好・靈魂知音眷侶';
+        headline = '「人間煙火最暖心，細水長流共白首。」';
+        baseScore = 94;
+        chemistry = `【靈犀相通・如沐春風】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 命宮同屬溫柔文雅之宿。彼此重視精神共鳴與內心平靜，生活美學品味相通。相處間無需多言便知對方冷暖，如同清茶般甘甜持久，是能夠相濡以沫、攜手到老的知心神仙眷侶。`;
+        break;
+      case 'JI_YUE_TONG_LIANG+JU_RI':
+        relType = '暖陽映雪・歡喜溫馨良伴';
+        headline = '「春風拂面話家常，彼此照亮心底光。」';
+        baseScore = 93;
+        chemistry = `【陽光普照・溫潤滋養】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 相處歡聲笑語不斷！太陽巨門的光明熱力驅散了機月同梁偶爾的猶豫多慮，而機月同梁的體貼善解又給予了太陽巨門最安心的放鬆角落。兩人在一起互為充電寶，生活溫暖而富有趣味。`;
+        break;
+      case 'JU_RI+JU_RI':
+        relType = '妙語如珠・無話不談摯友';
+        headline = '「言淺意深情意長，無話不談見真心。」';
+        baseScore = 88;
+        chemistry = `【思想交鋒・博學開朗】「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 的對話永遠停不下來！兩人思考靈動、涉獵廣泛，對世事有著強烈的好奇心與正義感。彼此就像無所不談的摯友玩家，共同探索世界讓彼此的眼界更加寬廣。`;
+        break;
+      default:
+        relType = '上善若水・相濡以沫知音';
+        headline = '「上善若水隨方圓，溫潤長存最動人。」';
+        baseScore = 89;
+        chemistry = `「${nameA}」(${starsStrA}) 與「${nameB}」(${starsStrB}) 命宮磁場圓融包容。雙方處事富有彈性，善於體諒對方的生活節奏，相處如涓涓細流平靜而綿長，具備極佳的磨合潛能。`;
+        break;
     }
 
+    // 2. 宿緣與夫妻宮應驗 (Marriage Palace Echo)
+    let echoBonus = 0;
+    const echoA = majorsB.some(s => majorsMarA.includes(s));
+    const echoB = majorsA.some(s => majorsMarB.includes(s));
+    if (echoA && echoB) {
+      echoBonus = 8;
+      chemistry += ` 值得一提的是，雙方的命宮核心星曜恰好相互映射入對方的【夫妻宮】，這是極為罕見的「雙向宿緣應驗」，象徵著彼此正是對方命中靈魂深處尋覓已久的理想型！`;
+    } else if (echoA) {
+      echoBonus = 5;
+      chemistry += ` 尤為奇妙的是，「${nameB}」的命宮主星正投射在「${nameA}」的夫妻宮守護星中，象徵著「${nameB}」舉手投足間正契合了「${nameA}」心底對伴侶的真實期待。`;
+    } else if (echoB) {
+      echoBonus = 5;
+      chemistry += ` 尤為奇妙的是，「${nameA}」的命宮主星正投射在「${nameB}」的夫妻宮守護星中，象徵著「${nameA}」的性格風範正是「${nameB}」心中最傾慕的伴侶模樣。`;
+    }
+
+    // 3. 地支互動 (Earthly Branches)
+    const bA = palLifeA.branchIndex;
+    const bB = palLifeB.branchIndex;
+    const nameBranchA = palLifeA.branch;
+    const nameBranchB = palLifeB.branch;
+
+    const liuHePairs = [[0,1],[2,11],[3,10],[4,9],[5,8],[6,7]];
+    const isLiuHe = liuHePairs.some(([x,y]) => (bA === x && bB === y) || (bA === y && bB === x));
+
+    const sanHeTriads = [[8,0,4], [5,9,1], [2,6,10], [11,3,7]];
+    const isSanHe = sanHeTriads.some(tri => tri.includes(bA) && tri.includes(bB) && bA !== bB);
+
+    const liuChongPairs = [[0,6],[1,7],[2,8],[3,9],[4,10],[5,11]];
+    const isLiuChong = liuChongPairs.some(([x,y]) => (bA === x && bB === y) || (bA === y && bB === x));
+
+    const isSameBranch = (bA === bB);
+
+    // 4. 生年四化跨盤互照 (Cross Transformations)
     const blessings = [];
-    blessings.push(`【${nameA}】的生年吉化飛入【${nameB}】的命格三方，無形中為對方帶來事業信心與開拓底氣。`);
-    blessings.push(`【${nameB}】的五行氣場能平抑【${nameA}】的急躁情緒，在關鍵時刻提供冷靜安定的力量。`);
+    const frictionPoints = [];
 
+    // Branch Blessings
+    if (isLiuHe) {
+      blessings.push(`【地支六合・暗合良緣】雙方命宮坐落於【${nameBranchA}】與【${nameBranchB}】，呈天作六合暗合之勢。磁場天然契合，無需言語便常有心有靈犀之感。`);
+    } else if (isSanHe) {
+      blessings.push(`【地支三合・志向共振】雙方命宮地支呈三合格局（${nameBranchA} 與 ${nameBranchB}），人生追求的大方向與價值尺度天生同頻，並肩同行事半功倍！`);
+    } else if (isSameBranch) {
+      blessings.push(`【命宮同支・同感同心】雙方命宮同坐【${nameBranchA}】宮，對生活情境的情緒反饋高度一致，最能設身處地體諒對方的苦衷與喜悅。`);
+    }
+
+    // A's Lu, Quan, Ke into B's palaces
+    const findStarPalace = (person, starName) => {
+      if (!person || !person.palaces || !starName) return null;
+      return person.palaces.find(p => p.stars && p.stars.some(s => s.name === starName));
+    };
+
+    const aLuPalInB = findStarPalace(personB, personA.fourTransformations.lu);
+    const aQuanPalInB = findStarPalace(personB, personA.fourTransformations.quan);
+    const aKePalInB = findStarPalace(personB, personA.fourTransformations.ke);
+    const aJiPalInB = findStarPalace(personB, personA.fourTransformations.ji);
+
+    const bLuPalInA = findStarPalace(personA, personB.fourTransformations.lu);
+    const bQuanPalInA = findStarPalace(personA, personB.fourTransformations.quan);
+    const bKePalInA = findStarPalace(personA, personB.fourTransformations.ke);
+    const bJiPalInA = findStarPalace(personA, personB.fourTransformations.ji);
+
+    if (aLuPalInB) {
+      blessings.push(`【${nameA} 化祿飛入 ${nameB} 的${formatSynastryPalaceName(aLuPalInB)}】「${nameA}」的星宮吉氣為「${nameB}」在「${aLuPalInB.name}」領域帶來豐沛的福澤與機會，是命中注定的幸運貴人！`);
+    }
+    if (bLuPalInA) {
+      blessings.push(`【${nameB} 化祿飛入 ${nameA} 的${formatSynastryPalaceName(bLuPalInA)}】「${nameB}」的存在如及時甘霖，在「${nameA}」的「${bLuPalInA.name}」宮位注入豐盈的活力與樂觀力量！`);
+    }
+
+    if (aQuanPalInB && ['命宮', '官祿', '財帛'].includes(aQuanPalInB.name)) {
+      blessings.push(`【${nameA} 化權照耀 ${nameB} 的${formatSynastryPalaceName(aQuanPalInB)}】在面臨關鍵抉擇時，「${nameA}」的魄力與決斷能給予「${nameB}」破局而出的強大底氣！`);
+    } else if (bQuanPalInA && ['命宮', '官祿', '財帛'].includes(bQuanPalInA.name)) {
+      blessings.push(`【${nameB} 化權照耀 ${nameA} 的${formatSynastryPalaceName(bQuanPalInA)}】「${nameB}」的堅毅原則能為「${nameA}」在「${bQuanPalInA.name}」方向上提供強而有力的支撐。`);
+    } else if (aKePalInB) {
+      blessings.push(`【${nameA} 化科照耀 ${nameB} 的${formatSynastryPalaceName(aKePalInB)}】「${nameA}」的理性智慧與溫文氣質，時常能為「${nameB}」化解煩惱、帶來清明心境與好名望。`);
+    }
+
+    // 五行局生剋
+    const elA = personA.elementBureau.number;
+    const elB = personB.elementBureau.number;
+    const isElementSheng = ((elA === 4 && elB === 2) || (elA === 2 && elB === 3) || (elA === 3 && elB === 6) || (elA === 6 && elB === 5) || (elA === 5 && elB === 4) ||
+                            (elB === 4 && elA === 2) || (elB === 2 && elA === 3) || (elB === 3 && elA === 6) || (elB === 6 && elA === 5) || (elB === 5 && elA === 4));
+    const isElementSame = (elA === elB);
+
+    if (isElementSheng) {
+      blessings.push(`【五行局氣場相生】「${personA.elementBureau.name}」與「${personB.elementBureau.name}」形成五行生生不息之循環，彼此相處如沐春風，情緒包容力極佳。`);
+    } else if (isElementSame) {
+      blessings.push(`【五行局同氣相求】雙方同屬「${personA.elementBureau.name}」，精神節奏與生命底色相近，遇重大決策時容易達成高度默契。`);
+    }
+
+    // 5. 磨擦點與煞星分析 (Friction Points)
+    if (isLiuChong) {
+      frictionPoints.push(`【命宮地支相沖（${nameBranchA} 與 ${nameBranchB}）】初相識時吸引力極強，但深入相處後生活作息或處事風格易有「南轅北轍」之感。關鍵在於求同存異，多欣賞彼此的差異。`);
+    }
+
+    if (aJiPalInB && ['命宮', '疾厄', '福德'].includes(aJiPalInB.name)) {
+      frictionPoints.push(`【${nameA} 化忌入 ${nameB} 的${formatSynastryPalaceName(aJiPalInB)}】「${nameA}」對「${nameB}」容易產生極深的情感牽絆與過度關切，有時易無形中造成對方心理壓力，需學會給彼此適度呼吸空間。`);
+    }
+    if (bJiPalInA && ['命宮', '疾厄', '福德'].includes(bJiPalInA.name)) {
+      frictionPoints.push(`【${nameB} 化忌入 ${nameA} 的${formatSynastryPalaceName(bJiPalInA)}】「${nameB}」在相處中對「${nameA}」期待甚高，遇不順時容易悶在心底，需建立「當天坦誠溝通」的交流習慣。`);
+    }
+
+    // Check fierce stars in life and marriage
+    const allFierceA = palLifeA.stars.filter(s => s.category === 'fierce').concat(palMarriageA ? palMarriageA.stars.filter(s => s.category === 'fierce') : []).map(s => s.name);
+    const allFierceB = palLifeB.stars.filter(s => s.category === 'fierce').concat(palMarriageB ? palMarriageB.stars.filter(s => s.category === 'fierce') : []).map(s => s.name);
+    const hasAggressive = allFierceA.includes('擎羊') || allFierceA.includes('火星') || allFierceB.includes('擎羊') || allFierceB.includes('火星');
+    const hasPassive = allFierceA.includes('陀羅') || allFierceA.includes('鈴星') || allFierceB.includes('陀羅') || allFierceB.includes('鈴星');
+    const hasKongJie = allFierceA.includes('地空') || allFierceA.includes('地劫') || allFierceB.includes('地空') || allFierceB.includes('地劫');
+
+    if (hasAggressive) {
+      frictionPoints.push(`【剛烈星曜警示（擎羊・火星）】命盤中帶有急躁剛烈之星，雙方在疲憊或遇分歧時容易言語犀利、互不相讓。吵架時切記默數三秒，莫以狠話試探感情。`);
+    }
+    if (hasPassive) {
+      frictionPoints.push(`【隱伏星曜警示（陀羅・鈴星）】相處中需特別預防「冷戰」與「積壓委屈」。若有心結切勿悶在心裡，主動拉起對方的手把話說開，關係才能歷久彌新。`);
+    }
+    if (hasKongJie && frictionPoints.length < 3) {
+      frictionPoints.push(`【空劫金錢觀念協調】雙方對金錢開銷與風險投資的偏好存在跳躍性，重大消費前務必充分溝通，建立透明的家庭共同預算制度。`);
+    }
+
+    if (frictionPoints.length === 0) {
+      frictionPoints.push(`【相處溫和需防缺乏火花】兩人磁場溫和平順、少有大爭吵，但相處日久易進入平淡期。建議定期安排兩人的專屬約會或旅行，持續為愛保鮮。`);
+      frictionPoints.push(`【偶有意見堅持】日常瑣事偶有各持己見的時刻，學會輪流退讓、不爭口舌之快，感情自會如膠似漆。`);
+    } else if (frictionPoints.length === 1) {
+      frictionPoints.push(`【生活瑣事磨合】在作息節奏與家務細節上偶有步調不同，彼此多一點幽默感看待生活小瑕疵，相處會更輕鬆愜意。`);
+    }
+
+    // 6. 小鹿兒專屬錦囊 (Fawn Advice)
+    let fawnAdvice = '';
+    if (pairKey.includes('SHA_PO_LANG')) {
+      fawnAdvice = `小鹿兒合盤相處心法：【以柔克剛・給彼此台階】。兩隻勇敢的鹿相遇，角若是向著外面的風雨，便所向披靡；若對著彼此，只會兩敗俱傷。學會把讚美掛在嘴邊，把道理放在擁抱之後，便是天下第一等福緣！`;
+    } else if (pairKey.includes('ZI_FU_WU_XIANG')) {
+      fawnAdvice = `小鹿兒合盤相處心法：【彼此尊崇・共享榮耀】。你們是天生能成就大格局的王牌組合！在外面互為最堅實的底氣與發言人，在私密屋簷下則要學會卸下防備與包袱。把榮耀歸給對方，把脆弱留給彼此，這份情義能經得起任何歲月考驗。`;
+    } else if (pairKey.includes('JU_RI')) {
+      fawnAdvice = `小鹿兒合盤相處心法：【傾聽有光・說話有溫度】。你們之間從不缺少交流的熱情與話題，但溝通的最高境界是「聽懂話語背後的情緒」。多一點深情注視與耐心傾聽，少一點邏輯辯論，熱情的光芒將永遠溫暖彼此心房。`;
+    } else if (pairKey.includes('JI_YUE_TONG_LIANG')) {
+      fawnAdvice = `小鹿兒合盤相處心法：【打開心扉・少一點猜測】。兩顆細膩的心在一起最懂溫柔，但也最容易因細節而胡思亂想。愛要大聲說出來，把心裡的需要坦誠告訴對方，少一點深夜猜忌，多一點清晨擁抱，歲月定能靜好綿長。`;
+    } else {
+      fawnAdvice = `小鹿兒合盤相處心法：【同頻共振・相伴相長】。最好的愛情不是彼此凝望，而是一起看同一個方向。珍惜彼此的閃光點，包容人生的不完美，在柴米油鹽中互為依靠，這就是人間最動人的圓滿良緣！`;
+    }
+
+    // 7. 動態四維分數計算
     const stemDiff = Math.abs(personA.lunarInfo.yearStemIndex - personB.lunarInfo.yearStemIndex) % 5;
-    const loveScore = Math.min(Math.max(baseScore + 3 - stemDiff, 60), 98);
-    const valueScore = Math.min(Math.max(baseScore - 2 + (personA.elementBureau.number === personB.elementBureau.number ? 6 : 0), 55), 96);
-    const wealthScore = Math.min(Math.max(baseScore + 4, 62), 99);
-    const commScore = Math.min(Math.max(baseScore - 3 + (10 - stemDiff * 2), 52), 95);
-    const overallScore = Math.round((loveScore + valueScore + wealthScore + commScore) / 4);
-
-    const frictionPoints = [
-      `性格上偶爾都有堅持己見的時刻，發生分歧時容易因「誰講得更有道理」而陷入爭論。`,
-      `工作忙碌時容易減少深度溝通，需警惕將外在壓力帶入彼此私密日常。`
-    ];
-
-    const fawnAdvice = `小鹿兒合盤相處心法：最好的親密關係，不是兩個人變成同一個人，而是兩個獨立完整的靈魂並肩看同一個方向。學會讚美對方的優點，包容彼此的盲點，福氣自然綿長長久！`;
+    const loveScore = Math.min(Math.max(baseScore + echoBonus + (isLiuHe ? 4 : 0) - (isLiuChong ? 6 : 0) + (isElementSheng ? 3 : 0), 60), 99);
+    const valueScore = Math.min(Math.max(baseScore + (isSanHe ? 5 : (isLiuHe ? 3 : 0)) + (isElementSame ? 4 : (isElementSheng ? 3 : -2)) - stemDiff, 55), 98);
+    const wealthScore = Math.min(Math.max(baseScore + (aLuPalInB ? 4 : 1) + (bLuPalInA ? 4 : 1) + (pairKey.includes('ZI_FU_WU_XIANG') ? 3 : 0) - (hasKongJie ? 4 : 0), 58), 99);
+    const commScore = Math.min(Math.max(baseScore + (isLiuHe ? 5 : 0) + (pairKey.includes('JU_RI') ? 4 : 0) - (hasAggressive ? 5 : 0) - (hasPassive ? 4 : 0) - (isLiuChong ? 5 : 0), 52), 97);
+    const overallScore = Math.round(loveScore * 0.35 + valueScore * 0.25 + wealthScore * 0.2 + commScore * 0.2);
 
     return {
       overallScore: overallScore,
